@@ -42,6 +42,14 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
 
+	// Track package-to-package edges to avoid duplicates
+	type edge struct {
+		from  string
+		to    string
+		color string
+	}
+	edges := make(map[string]edge)
+
 	for _, pkg := range pkgs {
 		if pkg.IsStub {
 			continue
@@ -57,19 +65,37 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 				if imp.Package.IsStub {
 					continue
 				}
+
+				fromNode := pkgNodeName(pkg)
+				toNode := pkgNodeName(imp.Package)
+				edgeKey := fromNode + "->" + toNode
+
 				arrowColor := cfg.Palette.Base.ImportArrow
 				if imp.InImportCycle {
 					arrowColor = cfg.Palette.Cycle.ImportArrow
 				}
-				buf.WriteString(
-					fmt.Sprintf(
-						edgeDef,
-						pkgNodeName(pkg),
-						pkgNodeName(imp.Package),
-						arrowColor.Hex(),
-					),
-				)
+
+				// Only add edge if not already seen, or if this one is in a cycle (higher priority)
+				if existing, exists := edges[edgeKey]; !exists || (imp.InImportCycle && existing.color != arrowColor.Hex()) {
+					edges[edgeKey] = edge{
+						from:  fromNode,
+						to:    toNode,
+						color: arrowColor.Hex(),
+					}
+				}
 			}
 		}
+	}
+
+	// Write all unique edges
+	for _, e := range edges {
+		buf.WriteString(
+			fmt.Sprintf(
+				edgeDef,
+				e.from,
+				e.to,
+				e.color,
+			),
+		)
 	}
 }
