@@ -217,7 +217,7 @@ func (builder *PrimitiveBuilder) addImport(node *ImportSpec) error {
 	}
 	impUID := imp.UID()
 	if _, ok := builder.curFile.Imports[impUID]; ok {
-		return fmt.Errorf("add import: duplicate import: %s \"%s\"", node.Name.String(), node.Path.Value)
+		return fmt.Errorf("add import: duplicate import: %s \"%s\" in file %s", node.Name.String(), node.Path.Value, builder.curFile.AbsPath)
 	}
 
 	// if the package exists, use it, otherwise use a stub
@@ -250,7 +250,7 @@ func (builder *PrimitiveBuilder) addFuncDecl(node *FuncDecl) error {
 	}
 	declUID := node.QualifiedName
 	if _, ok := builder.curFile.Decls[declUID]; ok {
-		return fmt.Errorf("add func decl: duplicate declaration: %s", node.QualifiedName)
+		return fmt.Errorf("add func decl: duplicate declaration: %s in file %s", node.QualifiedName, builder.curFile.AbsPath)
 	}
 	// TODO: receiver methods should never be received and should be skipped
 	var receiverDecl *internal.Decl
@@ -285,7 +285,7 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 				return errors.New("add gen decl: invalid declaration")
 			}
 			if _, ok := builder.curFile.Decls[spec.Name.String()]; ok {
-				return errors.New("add gen decl: duplicate declaration")
+				return fmt.Errorf("add gen decl: duplicate declaration '%s' in file %s", spec.Name.String(), builder.curFile.AbsPath)
 			}
 			if spec.Name.String() == "" {
 				return errors.New("add gen decl: invalid name")
@@ -303,8 +303,12 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 				return errors.New("add gen decl: invalid declaration")
 			}
 			for _, name := range spec.Names {
+				// Skip blank identifier - it can be used multiple times
+				if name.String() == "_" {
+					continue
+				}
 				if _, ok := builder.curFile.Decls[name.String()]; ok {
-					return errors.New("add gen decl: duplicate declaration")
+					return fmt.Errorf("add gen decl: duplicate declaration '%s' in file %s", name.String(), builder.curFile.AbsPath)
 				}
 				if name.String() == "" {
 					return errors.New("add gen decl: invalid constant or variable name")

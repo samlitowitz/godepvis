@@ -48,6 +48,10 @@ type DependencyVisitor struct {
 	out chan<- ast.Node
 
 	fileImports map[string]struct{}
+
+	// Track current package context for filename lookup
+	currentPackage *ast.Package
+	currentDirName string
 }
 
 func NewDependencyVisitor() (*DependencyVisitor, <-chan ast.Node) {
@@ -66,12 +70,15 @@ func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 
 	case *ast.File:
 		v.fileImports = make(map[string]struct{})
+		v.emitFile(node)
 
 	case *ast.ImportSpec:
 		v.emitImportSpec(node)
 
 	case *ast.FuncDecl:
 		v.emitFuncDecl(node)
+		// Don't descend into function bodies to avoid collecting function-scoped declarations
+		return nil
 
 	case *ast.GenDecl:
 		switch node.Tok {
@@ -109,28 +116,55 @@ func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 func (v *DependencyVisitor) emitPackageAndFiles(node *ast.Package) {
-	var setImportPathAndEmitPackage bool
+	// Get directory name from first file
 	var dirName string
-	for filename, astFile := range node.Files {
+	for filename := range node.Files {
 		absPath, err := filepath.Abs(filename)
 		if err != nil {
 			continue
 		}
-		if !setImportPathAndEmitPackage {
-			dirName, _ = filepath.Split(absPath)
-			dirName = strings.TrimRight(dirName, "/")
-			v.out <- &Package{
-				Package: node,
-				DirName: dirName,
-			}
-			setImportPathAndEmitPackage = true
-		}
+		dirName, _ = filepath.Split(absPath)
+		dirName = strings.TrimRight(dirName, "/")
+		break
+	}
 
-		v.out <- &File{
-			File:    astFile,
-			AbsPath: absPath,
-			DirName: dirName,
+	// Store package context for later file emission
+	v.currentPackage = node
+	v.currentDirName = dirName
+
+	v.out <- &Package{
+		Package: node,
+		DirName: dirName,
+	}
+}
+
+func (v *DependencyVisitor) emitFile(node *ast.File) {
+	if v.currentPackage == nil {
+		return
+	}
+
+	// Find the filename for this ast.File in the package's Files map
+	var filename string
+	for fn, astFile := range v.currentPackage.Files {
+		if astFile == node {
+			filename = fn
+			break
 		}
+	}
+
+	if filename == "" {
+		return
+	}
+
+	absPath, err := filepath.Abs(filename)
+	if err != nil {
+		return
+	}
+
+	v.out <- &File{
+		File:    node,
+		AbsPath: absPath,
+		DirName: v.currentDirName,
 	}
 }
 
@@ -169,18 +203,18 @@ func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
 	if node.Recv != nil {
 		// TODO: don't emit receiver functions/methods? we don't need them
 		var typName string
-		switch expr := node.Recv.List[0].Type.(type) {
+		recvType := node.Recv.List[0].Type
+		switch expr := recvType.(type) {
 		case *ast.Ident:
 			typName = expr.String()
 		case *ast.StarExpr:
-			if expr.X == nil {
-				// panic error, invalid receiver method
-			}
-			ident, ok := expr.X.(*ast.Ident)
-			if !ok {
-				// panic error, invalid receiver method
-			}
-			typName = ident.String()
+			typName = extractTypeName(expr.X)
+		case *ast.IndexExpr:
+			// Generic type with one parameter: Foo[T]
+			typName = extractTypeName(expr)
+		case *ast.IndexListExpr:
+			// Generic type with multiple parameters: Foo[T, U]
+			typName = extractTypeName(expr)
 		default:
 			// panic error, invalid receiver method
 		}
@@ -197,4 +231,21 @@ func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
 
 func (v *DependencyVisitor) Close() {
 	close(v.out)
+}
+
+// extractTypeName extracts the type name from an expression, handling generics
+func extractTypeName(expr ast.Expr) string {
+	switch e := expr.(type) {
+	case *ast.Ident:
+		// Simple type: Foo
+		return e.String()
+	case *ast.IndexExpr:
+		// Generic type with one parameter: Foo[T]
+		return extractTypeName(e.X)
+	case *ast.IndexListExpr:
+		// Generic type with multiple parameters: Foo[T, U]
+		return extractTypeName(e.X)
+	default:
+		return ""
+	}
 }

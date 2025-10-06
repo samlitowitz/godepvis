@@ -79,6 +79,10 @@ func parseFiles(
 				}
 
 				for _, pkg := range pkgs {
+					// Skip external test packages (they can't be imported, so won't cause cycles)
+					if strings.HasSuffix(pkg.Name, "_test") {
+						continue
+					}
 					ast.Walk(depVis, pkg)
 				}
 
