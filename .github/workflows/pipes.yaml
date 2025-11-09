@@ -6,33 +6,44 @@ on:
       - master
     paths:
       - '**.go'
+    types:
+      - labeled
+      - unlabeled
+      - opened
+      - synchronize
   push:
     branches:
       - master
     paths:
       - '**.go'
 
+env:
+  GO_VERSION: stable
+  GOLANGCI_LINT_VERSION: v2.6.1
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push'
+        || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci'))
     steps:
       - uses: actions/checkout@v5
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
+          go-version: ${{ env.GO_VERSION }}
       - name: Install Taskfile
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
       - name: Install deps
         run: go mod download
       - name: Build
-        run: task release
-      - name: Test
-        run: task test
+        run: GOPATH=$(pwd) ./bin/task release
 
   lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: |
+      github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci')
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v5
@@ -41,14 +52,22 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
-      - name: Install Taskfile
-        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
-      - name: Install deps
-        run: go mod download
-      - name: Build
-        run: task release
-      - name: Test
-        run: task test
+          go-version: ${{ env.GO_VERSION }}
       - name: Lint
-        run: task lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+
+  test:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push'
+        || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci'))
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Test
+        run: go test ./...
