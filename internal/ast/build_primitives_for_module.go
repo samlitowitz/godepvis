@@ -4,15 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/samlitowitz/goimportcycle/internal"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"io/fs"
 	"path/filepath"
 	"strings"
-	"sync"
-
-	"github.com/samlitowitz/goimportcycle/internal"
 )
 
 func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*internal.Package, error) {
@@ -52,11 +50,7 @@ func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*inter
 
 	builder := NewPrimitiveBuilder(modulePath, moduleRootDir)
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
 		err := buildDependencyGraph(builder, nodeOut, ctx.Done())
 		if err != nil {
 			cancel(fmt.Errorf("build depedency graph: %w", err))
@@ -78,7 +72,7 @@ func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*inter
 		cancel(nil)
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
 
 	err = context.Cause(ctx)
 	if !errors.Is(err, context.Canceled) {
