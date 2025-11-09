@@ -3,3 +3,6 @@
 !.editorconfig
 !.gitattributes
 !.gitignore
+!.golangci.yaml
+
+!.github/
