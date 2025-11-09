@@ -42,9 +42,14 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
 
+	pkgRelationships := make(map[string]map[string]bool)
 	for _, pkg := range pkgs {
 		if pkg.IsStub {
 			continue
+		}
+		pkgName := pkgNodeName(pkg)
+		if _, ok := pkgRelationships[pkgName]; !ok {
+			pkgRelationships[pkgName] = make(map[string]bool)
 		}
 		for _, file := range pkg.Files {
 			if file.IsStub {
@@ -57,6 +62,14 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 				if imp.Package.IsStub {
 					continue
 				}
+				impPkgName := pkgNodeName(imp.Package)
+				// don't write a relationship multiple times
+				// this could happen when multiple files in a package import the same package
+				if _, ok := pkgRelationships[pkgName][impPkgName]; ok {
+					continue
+				}
+				pkgRelationships[pkgName][impPkgName] = true
+
 				arrowColor := cfg.Palette.Base.ImportArrow
 				if imp.InImportCycle {
 					arrowColor = cfg.Palette.Cycle.ImportArrow
@@ -64,8 +77,8 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 				buf.WriteString(
 					fmt.Sprintf(
 						edgeDef,
-						pkgNodeName(pkg),
-						pkgNodeName(imp.Package),
+						pkgName,
+						impPkgName,
 						arrowColor.Hex(),
 					),
 				)
