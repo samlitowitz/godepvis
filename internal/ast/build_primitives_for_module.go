@@ -2,140 +2,113 @@ package ast
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"io/fs"
-	"log"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/samlitowitz/goimportcycle/internal"
 )
 
 func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*internal.Package, error) {
-	builder := NewPrimitiveBuilder(modulePath, moduleRootDir)
-	ctx, cancel := context.WithCancel(context.Background())
-	errChan := make(chan error)
-
-	go func() {
-		for {
-			select {
-			case err := <-errChan:
-				cancel()
-				log.Fatal(err)
-			case <-ctx.Done():
-				return
+	var filesToParse []string
+	err := filepath.WalkDir(
+		moduleRootDir,
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
+			if !d.IsDir() {
+				return nil
+			}
+			if strings.HasPrefix(d.Name(), ".") {
+				return fs.SkipDir
+			}
+			if strings.HasPrefix(d.Name(), "_") {
+				return fs.SkipDir
+			}
+			path, err = filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			filesToParse = append(filesToParse, path)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("enumerate files to parse: %w", err)
+	}
+
+	ctx, cancel := context.WithCancelCause(context.Background())
+	defer cancel(nil)
+
+	depVis, nodeOut := NewDependencyVisitor()
+	defer depVis.Close()
+
+	builder := NewPrimitiveBuilder(modulePath, moduleRootDir)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := buildDependencyGraph(builder, nodeOut, ctx.Done())
+		if err != nil {
+			cancel(fmt.Errorf("build depedency graph: %w", err))
 		}
 	}()
 
-	dirOut := walkDirectories(moduleRootDir, errChan)
-	nodeOut := parseFiles(dirOut, errChan, ctx.Done())
-	err := detectInputCycles(builder, cancel, nodeOut, errChan, ctx.Done())
-	close(errChan)
+	go func() {
+		for _, file := range filesToParse {
+			fset := token.NewFileSet()
+			pkgs, err := parser.ParseDir(fset, file, nil, 0)
+			if err != nil {
+				cancel(fmt.Errorf("parse files: %s: %w", file, err))
+			}
+
+			for _, pkg := range pkgs {
+				ast.Walk(depVis, pkg)
+			}
+		}
+		cancel(nil)
+	}()
+
+	wg.Wait()
+
+	err = context.Cause(ctx)
+	if !errors.Is(err, context.Canceled) {
+		return nil, err
+	}
+	err = builder.MarkupImportCycles()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return builder.Packages(), nil
 }
 
-func walkDirectories(path string, errChan chan<- error) <-chan string {
-	dirOut := make(chan string)
-
-	go func() {
-		defer close(dirOut)
-		err := filepath.WalkDir(
-			path,
-			func(path string, d fs.DirEntry, err error) error {
-				if err != nil {
-					return err
-				}
-				if !d.IsDir() {
-					return nil
-				}
-				if strings.HasPrefix(d.Name(), ".") {
-					return fs.SkipDir
-				}
-				if strings.HasPrefix(d.Name(), "_") {
-					return fs.SkipDir
-				}
-				path, err = filepath.Abs(path)
-				if err != nil {
-					return err
-				}
-				dirOut <- path
-				return nil
-			},
-		)
-		if err != nil {
-			errChan <- err
-		}
-	}()
-
-	return dirOut
-}
-
-func parseFiles(
-	dirOut <-chan string,
-	errChan chan<- error,
-	done <-chan struct{},
-) <-chan ast.Node {
-	depVis, nodeOut := NewDependencyVisitor()
-
-	go func() {
-		for {
-			select {
-			case dirPath, ok := <-dirOut:
-				if !ok {
-					depVis.Close()
-					return
-				}
-				fset := token.NewFileSet()
-				pkgs, err := parser.ParseDir(fset, dirPath, nil, 0)
-				if err != nil {
-					errChan <- err
-				}
-
-				for _, pkg := range pkgs {
-					ast.Walk(depVis, pkg)
-				}
-
-			case <-done:
-				depVis.Close()
-				return
-			}
-		}
-	}()
-	return nodeOut
-}
-
-func detectInputCycles(
+func buildDependencyGraph(
 	builder *PrimitiveBuilder,
-	cancel context.CancelFunc,
 	nodeOut <-chan ast.Node,
-	errChan chan<- error,
 	done <-chan struct{},
 ) error {
-	go func() {
-		for {
-			select {
-			case node, ok := <-nodeOut:
-				if !ok {
-					cancel()
-					return
-				}
-				err := builder.AddNode(node)
-				if err != nil {
-					errChan <- err
-					return
-				}
-
-			case <-done:
-				return
+	for {
+		select {
+		case node, ok := <-nodeOut:
+			if !ok {
+				return errors.New("failed to get next node")
 			}
+			err := builder.AddNode(node)
+			if err != nil {
+				return err
+			}
+
+		case <-done:
+			return nil
 		}
-	}()
-	<-done
-	return builder.MarkupImportCycles()
+	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -77,12 +78,12 @@ func main() {
 
 	packages, err := internalAST.BuildPrimitivesForModule(modulePath, moduleRootDir)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("build primitives for module: %w", err))
 	}
 
 	output, err := dot.Marshal(cfg, modulePath, packages)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("marshal dependency graph: %w", err))
 	}
 	if dotFile == "" {
 		_, err := os.Stdout.Write(output)
