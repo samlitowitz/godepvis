@@ -9,6 +9,7 @@ import (
 )
 
 func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	nodeDef := `
 	"%s" [label="%s", style="filled", fontcolor="%s", fillcolor="%s"];`
 
@@ -26,19 +27,22 @@ func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pk
 			pkgBackground = cfg.Palette.Cycle.PackageBackground
 		}
 
-		buf.WriteString(
-			fmt.Sprintf(
-				nodeDef,
-				pkgNodeName(pkg),
-				pkg.ModuleRelativePath(),
-				pkgText.Hex(),
-				pkgBackground.Hex(),
-			),
+		_, err = fmt.Fprintf(
+			buf,
+			nodeDef,
+			pkgNodeName(pkg),
+			pkg.ModuleRelativePath(),
+			pkgText.Hex(),
+			pkgBackground.Hex(),
 		)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
 func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
 
@@ -74,14 +78,16 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 				if imp.InImportCycle {
 					arrowColor = cfg.Palette.Cycle.ImportArrow
 				}
-				buf.WriteString(
-					fmt.Sprintf(
-						edgeDef,
-						pkgName,
-						impPkgName,
-						arrowColor.Hex(),
-					),
+				_, err = fmt.Fprintf(
+					buf,
+					edgeDef,
+					pkgName,
+					impPkgName,
+					arrowColor.Hex(),
 				)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}

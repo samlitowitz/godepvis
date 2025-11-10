@@ -10,7 +10,7 @@ type Color struct {
 }
 
 func (c Color) Hex() string {
-	r, g, b, _ := c.Color.RGBA()
+	r, g, b, _ := c.RGBA()
 	r = r >> 8
 	g = g >> 8
 	b = b >> 8

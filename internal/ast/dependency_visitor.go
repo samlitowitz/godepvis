@@ -193,14 +193,17 @@ func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
 		case *ast.StarExpr:
 			if expr.X == nil {
 				// panic error, invalid receiver method
+				panic("invalid receiver method")
 			}
 			ident, ok := expr.X.(*ast.Ident)
 			if !ok {
 				// panic error, invalid receiver method
+				panic("invalid receiver method")
 			}
 			typName = ident.String()
 		default:
 			// panic error, invalid receiver method
+			panic("invalid receiver method")
 		}
 		receiverName = typName
 		qualifiedName = typName + "." + node.Name.String()

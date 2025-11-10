@@ -140,11 +140,11 @@ func (decl Decl) UID() string {
 	return decl.QualifiedName()
 }
 
-func (d Decl) QualifiedName() string {
-	if d.ReceiverDecl == nil {
-		return d.Name
+func (decl Decl) QualifiedName() string {
+	if decl.ReceiverDecl == nil {
+		return decl.Name
 	}
-	return d.ReceiverDecl.Name + "." + d.Name
+	return decl.ReceiverDecl.Name + "." + decl.Name
 }
 
 type Import struct {

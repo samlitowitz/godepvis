@@ -1330,9 +1330,9 @@ func makeTree(t *testing.T, tree *Node) map[string]struct{} {
 					return
 				}
 			}
-			fd.Close()
+			_ = fd.Close()
 		} else {
-			os.Mkdir(path, 0770)
+			_ = os.Mkdir(path, 0770)
 			directories[path] = struct{}{}
 		}
 	})
@@ -1356,6 +1356,6 @@ func chtmpdir(t *testing.T) (restore func()) {
 		if err := os.Chdir(oldwd); err != nil {
 			t.Fatalf("chtmpdir: %v", err)
 		}
-		os.RemoveAll(d)
+		_ = os.RemoveAll(d)
 	}
 }

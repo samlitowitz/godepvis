@@ -36,17 +36,19 @@ func pkgCmpFn(a, b *internal.Package) int {
 }
 
 func writeHeader(buf *bytes.Buffer, modulePath string) {
-	buf.WriteString(
-		fmt.Sprintf(
-			`digraph {
+	_, err := fmt.Fprintf(
+		buf,
+		`digraph {
 	labelloc="t";
 	label="%s";
 	rankdir="TB";
 	node [shape="rect"];
 `,
-			modulePath,
-		),
+		modulePath,
 	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func writeFooter(buf *bytes.Buffer) {

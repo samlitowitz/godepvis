@@ -11,6 +11,12 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      - (.+)_test\.go
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - '-SA1019'
 formatters:
   enable:
     - gofmt
