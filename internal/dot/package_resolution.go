@@ -9,6 +9,7 @@ import (
 )
 
 func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	nodeDef := `
 	"%s" [label="%s", style="filled", fontcolor="%s", fillcolor="%s"];`
 
@@ -26,25 +27,33 @@ func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pk
 			pkgBackground = cfg.Palette.Cycle.PackageBackground
 		}
 
-		buf.WriteString(
-			fmt.Sprintf(
-				nodeDef,
-				pkgNodeName(pkg),
-				pkg.ModuleRelativePath(),
-				pkgText.Hex(),
-				pkgBackground.Hex(),
-			),
+		_, err = fmt.Fprintf(
+			buf,
+			nodeDef,
+			pkgNodeName(pkg),
+			pkg.ModuleRelativePath(),
+			pkgText.Hex(),
+			pkgBackground.Hex(),
 		)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
 func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
 
+	pkgRelationships := make(map[string]map[string]bool)
 	for _, pkg := range pkgs {
 		if pkg.IsStub {
 			continue
+		}
+		pkgName := pkgNodeName(pkg)
+		if _, ok := pkgRelationships[pkgName]; !ok {
+			pkgRelationships[pkgName] = make(map[string]bool)
 		}
 		for _, file := range pkg.Files {
 			if file.IsStub {
@@ -57,18 +66,28 @@ func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Confi
 				if imp.Package.IsStub {
 					continue
 				}
+				impPkgName := pkgNodeName(imp.Package)
+				// don't write a relationship multiple times
+				// this could happen when multiple files in a package import the same package
+				if _, ok := pkgRelationships[pkgName][impPkgName]; ok {
+					continue
+				}
+				pkgRelationships[pkgName][impPkgName] = true
+
 				arrowColor := cfg.Palette.Base.ImportArrow
 				if imp.InImportCycle {
 					arrowColor = cfg.Palette.Cycle.ImportArrow
 				}
-				buf.WriteString(
-					fmt.Sprintf(
-						edgeDef,
-						pkgNodeName(pkg),
-						pkgNodeName(imp.Package),
-						arrowColor.Hex(),
-					),
+				_, err = fmt.Fprintf(
+					buf,
+					edgeDef,
+					pkgName,
+					impPkgName,
+					arrowColor.Hex(),
 				)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}

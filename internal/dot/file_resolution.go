@@ -9,6 +9,7 @@ import (
 )
 
 func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	clusterDefHeader := `
 	subgraph "cluster_%s" {
 		label="%s";
@@ -36,15 +37,17 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs 
 			pkgBackground = cfg.Palette.Cycle.PackageBackground
 		}
 
-		buf.WriteString(
-			fmt.Sprintf(
-				clusterDefHeader,
-				pkgNodeName(pkg),
-				pkg.ModuleRelativePath(),
-				pkgText.Hex(),
-				pkgBackground.Hex(),
-			),
+		_, err = fmt.Fprintf(
+			buf,
+			clusterDefHeader,
+			pkgNodeName(pkg),
+			pkg.ModuleRelativePath(),
+			pkgText.Hex(),
+			pkgBackground.Hex(),
 		)
+		if err != nil {
+			panic(err)
+		}
 		for _, file := range pkg.Files {
 			if file.IsStub {
 				continue
@@ -58,21 +61,24 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs 
 				fileText = cfg.Palette.Cycle.FileName
 				fileBackground = cfg.Palette.Cycle.FileBackground
 			}
-			buf.WriteString(
-				fmt.Sprintf(
-					nodeDef,
-					fileNodeName(file),
-					file.FileName,
-					fileText.Hex(),
-					fileBackground.Hex(),
-				),
+			_, err = fmt.Fprintf(
+				buf,
+				nodeDef,
+				fileNodeName(file),
+				file.FileName,
+				fileText.Hex(),
+				fileBackground.Hex(),
 			)
+			if err != nil {
+				panic(err)
+			}
 		}
 		buf.WriteString(clusterDefFooter)
 	}
 }
 
 func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
 
@@ -96,14 +102,16 @@ func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *config.Config, 
 					if _, ok := imp.ReferencedFilesInCycle[refTyp.File.UID()]; ok {
 						arrowColor = cfg.Palette.Cycle.ImportArrow
 					}
-					buf.WriteString(
-						fmt.Sprintf(
-							edgeDef,
-							fileNodeName(file),
-							fileNodeName(refTyp.File),
-							arrowColor.Hex(),
-						),
+					_, err = fmt.Fprintf(
+						buf,
+						edgeDef,
+						fileNodeName(file),
+						fileNodeName(refTyp.File),
+						arrowColor.Hex(),
 					)
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 		}

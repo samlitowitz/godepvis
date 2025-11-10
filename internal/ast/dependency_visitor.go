@@ -47,7 +47,8 @@ func (decl FuncDecl) IsReceiver() bool {
 type DependencyVisitor struct {
 	out chan<- ast.Node
 
-	fileImports map[string]struct{}
+	packageFiles map[string]*File
+	fileImports  map[string]struct{}
 }
 
 func NewDependencyVisitor() (*DependencyVisitor, <-chan ast.Node) {
@@ -62,10 +63,12 @@ func NewDependencyVisitor() (*DependencyVisitor, <-chan ast.Node) {
 func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 	switch node := node.(type) {
 	case *ast.Package:
-		v.emitPackageAndFiles(node)
+		v.packageFiles = make(map[string]*File)
+		v.emitPackageAndCachePackageFiles(node)
 
 	case *ast.File:
 		v.fileImports = make(map[string]struct{})
+		v.emitFile(node)
 
 	case *ast.ImportSpec:
 		v.emitImportSpec(node)
@@ -108,7 +111,7 @@ func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 	return v
 }
 
-func (v *DependencyVisitor) emitPackageAndFiles(node *ast.Package) {
+func (v *DependencyVisitor) emitPackageAndCachePackageFiles(node *ast.Package) {
 	var setImportPathAndEmitPackage bool
 	var dirName string
 	for filename, astFile := range node.Files {
@@ -126,12 +129,27 @@ func (v *DependencyVisitor) emitPackageAndFiles(node *ast.Package) {
 			setImportPathAndEmitPackage = true
 		}
 
-		v.out <- &File{
+		// DIRTY HACK
+		// We want to associate file names with the *ast.File.
+		// Unfortunately the Go AST does not support this directly or indirectly at the moment.
+		// We'll overwrite `GoVersion` because for our use case it does not matter at preset.
+		// This is **REALLY** bad and should be replaced at the earliest opportunity that is not right now.
+		astFile.GoVersion = absPath
+		v.packageFiles[astFile.GoVersion] = &File{
 			File:    astFile,
 			AbsPath: absPath,
 			DirName: dirName,
 		}
 	}
+}
+
+func (v *DependencyVisitor) emitFile(node *ast.File) {
+	file, ok := v.packageFiles[node.GoVersion]
+	if !ok {
+		return
+	}
+
+	v.out <- file
 }
 
 func (v *DependencyVisitor) emitImportSpec(node *ast.ImportSpec) {
@@ -175,14 +193,17 @@ func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
 		case *ast.StarExpr:
 			if expr.X == nil {
 				// panic error, invalid receiver method
+				panic("invalid receiver method")
 			}
 			ident, ok := expr.X.(*ast.Ident)
 			if !ok {
 				// panic error, invalid receiver method
+				panic("invalid receiver method")
 			}
 			typName = ident.String()
 		default:
 			// panic error, invalid receiver method
+			panic("invalid receiver method")
 		}
 		receiverName = typName
 		qualifiedName = typName + "." + node.Name.String()
