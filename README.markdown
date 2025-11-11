@@ -1,5 +1,6 @@
 # Go Import Cycle
 [![Go Report Card](https://goreportcard.com/badge/github.com/samlitowitz/godepvis)](https://goreportcard.com/report/github.com/samlitowitz/godepvis)
+[![Pipes](https://github.com/samlitowitz/godepvis/actions/workflows/pipes.yaml/badge.svg?branch=master)](https://github.com/samlitowitz/godepvis/actions/workflows/pipes.yaml)
 
 `godepvis` is a tool to visualize Go imports resolved to the package or file level.
 
