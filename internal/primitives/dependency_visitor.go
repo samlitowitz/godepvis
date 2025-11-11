@@ -3,7 +3,6 @@ package primitives
 import (
 	"go/ast"
 	"go/token"
-	"path/filepath"
 	"strings"
 )
 
@@ -44,37 +43,38 @@ func (decl FuncDecl) IsReceiver() bool {
 	return decl.Recv != nil
 }
 
+// DependencyVisitor is only for use against individual files
 type DependencyVisitor struct {
-	out chan<- ast.Node
+	inOrderNodes []ast.Node
 
-	packageFiles map[string]*File
-	fileImports  map[string]struct{}
+	fileImports map[string]struct{}
 }
 
-func NewDependencyVisitor() (*DependencyVisitor, <-chan ast.Node) {
-	out := make(chan ast.Node)
-	v := &DependencyVisitor{
-		out: out,
-	}
+func NewDependencyVisitor() *DependencyVisitor {
+	v := &DependencyVisitor{}
 
-	return v, out
+	return v
+}
+
+func (v *DependencyVisitor) Reset() {
+	v.inOrderNodes = nil
+	v.fileImports = nil
+}
+
+func (v *DependencyVisitor) InOrderNodes() []ast.Node {
+	return v.inOrderNodes
 }
 
 func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 	switch node := node.(type) {
-	case *ast.Package:
-		v.packageFiles = make(map[string]*File)
-		v.emitPackageAndCachePackageFiles(node)
-
 	case *ast.File:
 		v.fileImports = make(map[string]struct{})
-		v.emitFile(node)
 
 	case *ast.ImportSpec:
-		v.emitImportSpec(node)
+		v.addImportSpec(node)
 
 	case *ast.FuncDecl:
-		v.emitFuncDecl(node)
+		v.addFuncDecl(node)
 
 	case *ast.GenDecl:
 		switch node.Tok {
@@ -83,7 +83,7 @@ func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 		case token.TYPE:
 			fallthrough
 		case token.VAR:
-			v.out <- node
+			v.inOrderNodes = append(v.inOrderNodes, node)
 		}
 
 	case *ast.SelectorExpr:
@@ -103,56 +103,18 @@ func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 			return v
 		}
 
-		v.out <- &SelectorExpr{
-			SelectorExpr: node,
-			ImportName:   impName,
-		}
+		v.inOrderNodes = append(
+			v.inOrderNodes,
+			&SelectorExpr{
+				SelectorExpr: node,
+				ImportName:   impName,
+			},
+		)
 	}
 	return v
 }
 
-func (v *DependencyVisitor) emitPackageAndCachePackageFiles(node *ast.Package) {
-	var setImportPathAndEmitPackage bool
-	var dirName string
-	for filename, astFile := range node.Files {
-		absPath, err := filepath.Abs(filename)
-		if err != nil {
-			continue
-		}
-		if !setImportPathAndEmitPackage {
-			dirName, _ = filepath.Split(absPath)
-			dirName = strings.TrimRight(dirName, "/")
-			v.out <- &Package{
-				Package: node,
-				DirName: dirName,
-			}
-			setImportPathAndEmitPackage = true
-		}
-
-		// DIRTY HACK
-		// We want to associate file names with the *ast.File.
-		// Unfortunately the Go AST does not support this directly or indirectly at the moment.
-		// We'll overwrite `GoVersion` because for our use case it does not matter at preset.
-		// This is **REALLY** bad and should be replaced at the earliest opportunity that is not right now.
-		astFile.GoVersion = absPath
-		v.packageFiles[astFile.GoVersion] = &File{
-			File:    astFile,
-			AbsPath: absPath,
-			DirName: dirName,
-		}
-	}
-}
-
-func (v *DependencyVisitor) emitFile(node *ast.File) {
-	file, ok := v.packageFiles[node.GoVersion]
-	if !ok {
-		return
-	}
-
-	v.out <- file
-}
-
-func (v *DependencyVisitor) emitImportSpec(node *ast.ImportSpec) {
+func (v *DependencyVisitor) addImportSpec(node *ast.ImportSpec) {
 	node.Path.Value = strings.Trim(node.Path.Value, "\"")
 	pieces := strings.Split(node.Path.Value, "/")
 	name := pieces[len(pieces)-1]
@@ -173,14 +135,17 @@ func (v *DependencyVisitor) emitImportSpec(node *ast.ImportSpec) {
 		v.fileImports[name] = struct{}{}
 	}
 
-	v.out <- &ImportSpec{
-		ImportSpec: node,
-		IsAliased:  isAliased,
-		Alias:      alias,
-	}
+	v.inOrderNodes = append(
+		v.inOrderNodes,
+		&ImportSpec{
+			ImportSpec: node,
+			IsAliased:  isAliased,
+			Alias:      alias,
+		},
+	)
 }
 
-func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
+func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 	receiverName := ""
 	qualifiedName := node.Name.String()
 
@@ -209,13 +174,12 @@ func (v *DependencyVisitor) emitFuncDecl(node *ast.FuncDecl) {
 		qualifiedName = typName + "." + node.Name.String()
 	}
 
-	v.out <- &FuncDecl{
-		FuncDecl:      node,
-		ReceiverName:  receiverName,
-		QualifiedName: qualifiedName,
-	}
-}
-
-func (v *DependencyVisitor) Close() {
-	close(v.out)
+	v.inOrderNodes = append(
+		v.inOrderNodes,
+		&FuncDecl{
+			FuncDecl:      node,
+			ReceiverName:  receiverName,
+			QualifiedName: qualifiedName,
+		},
+	)
 }
