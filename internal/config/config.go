@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/go-playground/colors"
-	inColor "github.com/samlitowitz/goimportcycle/internal/color"
+	inColor "github.com/samlitowitz/godepvis/internal/color"
 	"gopkg.in/yaml.v3"
 )
 

@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/samlitowitz/goimportcycle/internal/color"
+	"github.com/samlitowitz/godepvis/internal/color"
 
-	"github.com/samlitowitz/goimportcycle/internal/config"
+	"github.com/samlitowitz/godepvis/internal/config"
 )
 
 func TestFromYamlFile_Empty(t *testing.T) {

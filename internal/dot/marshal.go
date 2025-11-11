@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/samlitowitz/goimportcycle/internal/config"
+	"github.com/samlitowitz/godepvis/internal/config"
 
-	"github.com/samlitowitz/goimportcycle/internal"
+	"github.com/samlitowitz/godepvis/internal"
 )
 
 func Marshal(cfg *config.Config, modulePath string, pkgs []*internal.Package) ([]byte, error) {

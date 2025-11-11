@@ -3,7 +3,7 @@ package a
 import (
 	"log"
 
-	"github.com/samlitowitz/goimportcycle/examples/transitive/c"
+	"github.com/samlitowitz/godepvis/examples/transitive/c"
 )
 
 func Fn() {

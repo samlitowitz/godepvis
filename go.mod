@@ -1,4 +1,4 @@
-module github.com/samlitowitz/goimportcycle
+module github.com/samlitowitz/godepvis
 
 go 1.23.0
 

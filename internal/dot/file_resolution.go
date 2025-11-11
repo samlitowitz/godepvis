@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/samlitowitz/goimportcycle/internal"
-	"github.com/samlitowitz/goimportcycle/internal/config"
+	"github.com/samlitowitz/godepvis/internal"
+	"github.com/samlitowitz/godepvis/internal/config"
 )
 
 func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {

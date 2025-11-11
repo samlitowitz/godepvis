@@ -10,10 +10,10 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/samlitowitz/goimportcycle/internal/config"
-	"github.com/samlitowitz/goimportcycle/internal/dot"
+	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal/dot"
 
-	internalAST "github.com/samlitowitz/goimportcycle/internal/ast"
+	internalAST "github.com/samlitowitz/godepvis/internal/ast"
 
 	"github.com/google/go-cmp/cmp"
 )

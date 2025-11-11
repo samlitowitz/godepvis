@@ -1,6 +1,6 @@
 digraph {
 	labelloc="t";
-	label="github.com/samlitowitz/goimportcycle/examples/interlinked";
+	label="github.com/samlitowitz/godepvis/examples/interlinked";
 	rankdir="TB";
 	node [shape="rect"];
 

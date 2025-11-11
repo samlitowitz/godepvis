@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	internalAST "github.com/samlitowitz/goimportcycle/internal/ast"
+	internalAST "github.com/samlitowitz/godepvis/internal/ast"
 )
 
 func TestDependencyVisitor_Visit_EmitsPackages(t *testing.T) {

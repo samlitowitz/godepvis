@@ -1,6 +1,6 @@
 digraph {
 	labelloc="t";
-	label="github.com/samlitowitz/goimportcycle/examples/independent";
+	label="github.com/samlitowitz/godepvis/examples/independent";
 	rankdir="TB";
 	node [shape="rect"];
 

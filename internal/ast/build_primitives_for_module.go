@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/samlitowitz/goimportcycle/internal"
+	"github.com/samlitowitz/godepvis/internal"
 	"go/ast"
 	"go/parser"
 	"go/token"

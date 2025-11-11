@@ -9,7 +9,7 @@ vars:
     sh: git rev-parse HEAD
   TARGETDIR:
     sh: echo $GOPATH/bin
-  BIN: 'goimportcycle'
+  BIN: 'godepvis'
   PROJECT_PROTO_INCLUDE:
     sh: cd .. && pwd
   PROJECT_PROTO_OUT:

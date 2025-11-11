@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/samlitowitz/goimportcycle/internal"
+	"github.com/samlitowitz/godepvis/internal"
 
-	internalAST "github.com/samlitowitz/goimportcycle/internal/ast"
+	internalAST "github.com/samlitowitz/godepvis/internal/ast"
 )
 
 func TestPrimitiveBuilder_MarkupImportCycles_None(t *testing.T) {

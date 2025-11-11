@@ -27,10 +27,10 @@ for d in $EXAMPLES_DIR/*/ ; do
     echo "Processing $d"
 
     echo "File Resolution"
-    goimportcycle -debug $cfg -path $d -resolution file -dot $outputDir/file.dot
+    godepvis -debug $cfg -path $d -resolution file -dot $outputDir/file.dot
     dot -Tpng -o $outputDir/file.png $outputDir/file.dot
 
     echo "Package Resolution"
-    goimportcycle -debug $cfg -path $d -resolution package -dot $outputDir/package.dot
+    godepvis -debug $cfg -path $d -resolution package -dot $outputDir/package.dot
     dot -Tpng -o $outputDir/package.png $outputDir/package.dot
 done

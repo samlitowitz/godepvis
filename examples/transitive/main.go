@@ -1,6 +1,6 @@
 package main
 
-import "github.com/samlitowitz/goimportcycle/examples/transitive/a"
+import "github.com/samlitowitz/godepvis/examples/transitive/a"
 
 func main() {
 	a.Fn()

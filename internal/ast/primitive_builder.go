@@ -7,7 +7,7 @@ import (
 	"go/token"
 	"path/filepath"
 
-	"github.com/samlitowitz/goimportcycle/internal"
+	"github.com/samlitowitz/godepvis/internal"
 )
 
 type PrimitiveBuilder struct {

@@ -3,7 +3,7 @@ package a
 import (
 	"log"
 
-	"github.com/samlitowitz/goimportcycle/examples/simple/b"
+	"github.com/samlitowitz/godepvis/examples/simple/b"
 )
 
 func Fn() {
