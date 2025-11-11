@@ -9,19 +9,19 @@
 
 # Usage
 ```shell
-godepvis -path examples/simple/ -dot imports.dot
+godepvis --path examples/simple/ --dot imports.dot
 dot -Tpng -o assets/example.png imports.dot
 ```
 
-![Example import graph resolved to the file level](assets/examples/simple/file.png?raw=true "Example import graph resolved to the file level")
+![Example import graph resolved to the file level](assets/examples/direct-circular-dependency/file.png?raw=true "Example import graph resolved to the file level")
 
 Red lines indicate files causing import cycles between packages. Packages involved in a cycle have their backgrounds colored red.
 
 ```shell
-godepvis -path examples/simple/ -dot imports.dot -resolution package
+godepvis --path examples/simple/ --dot imports.dot --resolution package
 dot -Tpng -o assets/example.png imports.dot
 ```
-![Example import graph resolved to the package level](assets/examples/simple/package.png?raw=true "Example import graph resolved to the package level")
+![Example import graph resolved to the package level](assets/examples/direct-circular-dependency/package.png?raw=true "Example import graph resolved to the package level")
 
 Red lines indicate import cycles between packages.
 
@@ -47,6 +47,6 @@ cycle:
 
 ...to produce the following outputs...
 
-![Example import graph resolved to the file level](assets/examples/simple-config/file.png?raw=true "Example import graph resolved to the file level")
+![Example import graph resolved to the file level](assets/examples/simple-palette/file.png?raw=true "Example import graph resolved to the file level")
 
-![Example import graph resolved to the package level](assets/examples/simple-config/package.png?raw=true "Example import graph resolved to the package level")
+![Example import graph resolved to the package level](assets/examples/simple-palette/package.png?raw=true "Example import graph resolved to the package level")

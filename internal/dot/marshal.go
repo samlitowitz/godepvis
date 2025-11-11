@@ -4,26 +4,33 @@ import (
 	"bytes"
 	"cmp"
 	"fmt"
-	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal"
+	"github.com/samlitowitz/godepvis/internal/color"
 	"slices"
 	"strings"
-
-	"github.com/samlitowitz/godepvis/internal"
 )
 
-func Marshal(cfg *config.Config, modulePath string, pkgs []*internal.Package) ([]byte, error) {
+func Marshal(modulePath string, pkgs []*internal.Package, opts ...Option) ([]byte, error) {
+	options := options{
+		palette:    *color.DefaultPalette,
+		resolution: internal.FileResolution,
+	}
+	for _, opt := range opts {
+		opt.apply(&options)
+	}
+
 	slices.SortFunc(pkgs, pkgCmpFn)
 
 	buf := &bytes.Buffer{}
 
 	writeHeader(buf, modulePath)
-	switch cfg.Resolution {
-	case config.FileResolution:
-		writeNodeDefsForFileResolution(buf, cfg, pkgs)
-		writeRelationshipsForFileResolution(buf, cfg, pkgs)
-	case config.PackageResolution:
-		writeNodeDefsForPackageResolution(buf, cfg, pkgs)
-		writeRelationshipsForPackageResolution(buf, cfg, pkgs)
+	switch options.resolution {
+	case internal.FileResolution:
+		writeNodeDefsForFileResolution(buf, &options.palette, pkgs)
+		writeRelationshipsForFileResolution(buf, &options.palette, pkgs)
+	case internal.PackageResolution:
+		writeNodeDefsForPackageResolution(buf, &options.palette, pkgs)
+		writeRelationshipsForPackageResolution(buf, &options.palette, pkgs)
 	}
 	writeFooter(buf)
 

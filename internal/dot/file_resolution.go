@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal/color"
 )
 
-func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+func writeNodeDefsForFileResolution(buf *bytes.Buffer, palette *color.Palette, pkgs []*internal.Package) {
 	var err error
 	clusterDefHeader := `
 	subgraph "cluster_%s" {
@@ -29,11 +29,11 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs 
 		if len(pkg.Files) == 0 {
 			continue
 		}
-		pkgText := cfg.Palette.Base.PackageName
-		pkgBackground := cfg.Palette.Base.PackageBackground
+		pkgText := palette.Base.PackageName
+		pkgBackground := palette.Base.PackageBackground
 		if pkg.InImportCycle {
-			pkgText = cfg.Palette.Cycle.PackageName
-			pkgBackground = cfg.Palette.Cycle.PackageBackground
+			pkgText = palette.Cycle.PackageName
+			pkgBackground = palette.Cycle.PackageBackground
 		}
 
 		_, err = fmt.Fprintf(
@@ -48,17 +48,17 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs 
 			panic(err)
 		}
 		for _, file := range pkg.Files {
-			if file.IsStub {
+			if file.IsStub && !file.IsBlankImport {
 				continue
 			}
 			if len(file.Decls) == 0 {
 				continue
 			}
-			fileText := cfg.Palette.Base.FileName
-			fileBackground := cfg.Palette.Base.FileBackground
+			fileText := palette.Base.FileName
+			fileBackground := palette.Base.FileBackground
 			if file.InImportCycle {
-				fileText = cfg.Palette.Cycle.FileName
-				fileBackground = cfg.Palette.Cycle.FileBackground
+				fileText = palette.Cycle.FileName
+				fileBackground = palette.Cycle.FileBackground
 			}
 			_, err = fmt.Fprintf(
 				buf,
@@ -76,7 +76,7 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs 
 	}
 }
 
-func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+func writeRelationshipsForFileResolution(buf *bytes.Buffer, palette *color.Palette, pkgs []*internal.Package) {
 	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
@@ -97,9 +97,9 @@ func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *config.Config, 
 					continue
 				}
 				for _, refTyp := range imp.ReferencedTypes {
-					arrowColor := cfg.Palette.Base.ImportArrow
+					arrowColor := palette.Base.ImportArrow
 					if _, ok := imp.ReferencedFilesInCycle[refTyp.File.UID()]; ok {
-						arrowColor = cfg.Palette.Cycle.ImportArrow
+						arrowColor = palette.Cycle.ImportArrow
 					}
 					_, err = fmt.Fprintf(
 						buf,

@@ -1,110 +1,108 @@
 package primitives
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"github.com/samlitowitz/godepvis/internal"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"golang.org/x/tools/go/packages"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func BuildForModule(
 	modulePath,
 	moduleDir string,
-	buildFlags []string,
 ) ([]*internal.Package, error) {
-	filesToParse, err := getFilesForModule(moduleDir, buildFlags)
+	var dirsToParse []string
+	err := filepath.WalkDir(
+		moduleDir,
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !d.IsDir() {
+				return nil
+			}
+			if strings.HasPrefix(d.Name(), ".") {
+				return fs.SkipDir
+			}
+			if strings.HasPrefix(d.Name(), "_") {
+				return fs.SkipDir
+			}
+			path, err = filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			dirsToParse = append(dirsToParse, path)
+			return nil
+		},
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get packages: %w", err)
 	}
 
-	ctx, cancel := context.WithCancelCause(context.Background())
-	defer cancel(nil)
-
-	depVis, nodeOut := NewDependencyVisitor()
-	defer depVis.Close()
-
+	depVis := NewDependencyVisitor()
 	builder := NewPrimitiveBuilder(modulePath, moduleDir)
-
-	go func() {
-		err := buildDependencyGraph(builder, nodeOut, ctx.Done())
+	fset := token.NewFileSet()
+	// copied parser.ParseDir because we want to handle files and packages manually
+	for _, dirToParse := range dirsToParse {
+		list, err := os.ReadDir(dirToParse)
 		if err != nil {
-			cancel(fmt.Errorf("build depedency graph: %w", err))
+			return nil, err
 		}
-	}()
 
-	go func() {
-		for _, file := range filesToParse {
-			fset := token.NewFileSet()
-			pkg, err := parser.ParseFile(fset, file, nil, 0)
-			if err != nil {
-				cancel(fmt.Errorf("parse files: %s: %w", file, err))
+		pkgsSeen := map[string]bool{}
+		for _, d := range list {
+			if d.IsDir() ||
+				strings.HasPrefix(d.Name(), ".") ||
+				!strings.HasSuffix(d.Name(), ".go") ||
+				strings.HasSuffix(d.Name(), "_test.go") {
+				continue
 			}
-			ast.Walk(depVis, pkg)
+
+			filename := filepath.Join(dirToParse, d.Name())
+			src, err := parser.ParseFile(fset, filename, nil, 0)
+			if err != nil {
+				return nil, fmt.Errorf("parse error: %s: %w", filename, err)
+			}
+			name := src.Name.Name
+			if _, seen := pkgsSeen[name]; !seen {
+				err = builder.AddNode(&Package{
+					Package: &ast.Package{
+						Name: name,
+					},
+					DirName: dirToParse,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("add package: %s: %w", filename, err)
+				}
+				pkgsSeen[name] = true
+			}
+
+			err = builder.AddNode(&File{
+				File:    &ast.File{},
+				AbsPath: filename,
+				DirName: dirToParse,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("add file: %s: %w", filename, err)
+			}
+			depVis.Reset()
+			ast.Walk(depVis, src)
+			for _, node := range depVis.InOrderNodes() {
+				err = builder.AddNode(node)
+				if err != nil {
+					return nil, fmt.Errorf("add node: %s: %w", filename, err)
+				}
+			}
 		}
-		cancel(nil)
-	}()
-
-	<-ctx.Done()
-
-	err = context.Cause(ctx)
-	if !errors.Is(err, context.Canceled) {
-		return nil, err
 	}
 	err = builder.MarkupImportCycles()
 	if err != nil {
 		return nil, err
 	}
 	return builder.Packages(), nil
-}
-
-func getFilesForModule(
-	moduleDir string,
-	buildFlags []string,
-) ([]string, error) {
-	pkgCfg := &packages.Config{
-		Mode:       packages.LoadFiles | packages.LoadImports,
-		Dir:        moduleDir,
-		BuildFlags: buildFlags,
-	}
-
-	pkgs, err := packages.Load(pkgCfg, "./...")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load module: %w", err)
-	}
-
-	var filesToParse []string
-	iter := packages.Postorder(pkgs)
-	for pkg := range iter {
-		if len(pkg.Errors) > 0 {
-			return nil, fmt.Errorf("errors loading module: %w", pkg.Errors[0])
-		}
-		filesToParse = append(filesToParse, pkg.CompiledGoFiles...)
-	}
-	return filesToParse, nil
-}
-
-func buildDependencyGraph(
-	builder *PrimitiveBuilder,
-	nodeOut <-chan ast.Node,
-	done <-chan struct{},
-) error {
-	for {
-		select {
-		case node, ok := <-nodeOut:
-			if !ok {
-				return errors.New("failed to get next node")
-			}
-			err := builder.AddNode(node)
-			if err != nil {
-				return err
-			}
-
-		case <-done:
-			return nil
-		}
-	}
 }

@@ -11,10 +11,11 @@ type Package struct {
 	DirName string
 
 	ModulePath string
-	ModuleRoot string
+	ModuleDir  string
 	Name       string
 
-	Files map[string]*File
+	BlankImportFile *File
+	Files           map[string]*File
 
 	IsStub        bool
 	InImportCycle bool
@@ -24,8 +25,8 @@ func (pkg Package) ImportPath() string {
 	if pkg.Name == "main" {
 		return ""
 	}
-	moduleRoot := pkg.ModuleRoot
-	if strings.LastIndex(moduleRoot, string(os.PathSeparator)) != len(pkg.ModuleRoot)-1 {
+	moduleRoot := pkg.ModuleDir
+	if strings.LastIndex(moduleRoot, string(os.PathSeparator)) != len(pkg.ModuleDir)-1 {
 		moduleRoot += string(os.PathSeparator)
 	}
 	if strings.HasPrefix(pkg.DirName, moduleRoot) {
@@ -46,10 +47,10 @@ func (pkg Package) ImportPath() string {
 }
 
 func (pkg Package) ModuleRelativePath() string {
-	if strings.HasPrefix(pkg.DirName, pkg.ModuleRoot) {
+	if strings.HasPrefix(pkg.DirName, pkg.ModuleDir) {
 		path := strings.TrimPrefix(
 			pkg.DirName,
-			pkg.ModuleRoot,
+			pkg.ModuleDir,
 		)
 		path = strings.TrimPrefix(path, string(filepath.Separator))
 		if pkg.Name != "main" {
@@ -85,6 +86,14 @@ func (pkg Package) UID() string {
 	return pkg.DirName
 }
 
+func (pkg Package) HasBlankImports() bool {
+	if pkg.BlankImportFile == nil {
+		return false
+	}
+	_, ok := pkg.Files[pkg.BlankImportFile.UID()]
+	return ok
+}
+
 type File struct {
 	Package *Package
 
@@ -95,6 +104,7 @@ type File struct {
 	Decls   map[string]*Decl
 
 	IsStub        bool
+	IsBlankImport bool
 	InImportCycle bool
 }
 
@@ -150,8 +160,12 @@ func (decl Decl) QualifiedName() string {
 type Import struct {
 	Package *Package
 
-	Name string
-	Path string
+	Name  string
+	Alias string
+	Path  string
+
+	IsAliased bool
+	IsBlank   bool
 
 	ReferencedTypes map[string]*Decl
 
@@ -160,5 +174,11 @@ type Import struct {
 }
 
 func (i Import) UID() string {
+	if i.IsBlank {
+		return i.Alias + i.Name
+	}
+	if i.IsAliased {
+		return i.Alias
+	}
 	return i.Name
 }

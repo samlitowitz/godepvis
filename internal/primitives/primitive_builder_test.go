@@ -38,7 +38,7 @@ func TestPrimitiveBuilder_AddNode_Package(t *testing.T) {
 			expected: &internal.Package{
 				DirName:    moduleRoot,
 				ModulePath: modulePath,
-				ModuleRoot: moduleRoot,
+				ModuleDir:  moduleRoot,
 				Name:       "main",
 				Files:      map[string]*internal.File{},
 			},
@@ -47,7 +47,7 @@ func TestPrimitiveBuilder_AddNode_Package(t *testing.T) {
 			expected: &internal.Package{
 				DirName:    moduleRoot,
 				ModulePath: modulePath,
-				ModuleRoot: moduleRoot,
+				ModuleDir:  moduleRoot,
 				Name:       "a",
 				Files:      map[string]*internal.File{},
 			},
@@ -97,7 +97,7 @@ func TestPrimitiveBuilder_AddNode_File(t *testing.T) {
 			pkg: &internal.Package{
 				DirName:    moduleRoot,
 				ModulePath: modulePath,
-				ModuleRoot: moduleRoot,
+				ModuleDir:  moduleRoot,
 				Name:       "main",
 				Files:      map[string]*internal.File{},
 			},
@@ -113,7 +113,7 @@ func TestPrimitiveBuilder_AddNode_File(t *testing.T) {
 			pkg: &internal.Package{
 				DirName:    moduleRoot,
 				ModulePath: modulePath,
-				ModuleRoot: moduleRoot,
+				ModuleDir:  moduleRoot,
 				Name:       "a",
 				Files:      map[string]*internal.File{},
 			},

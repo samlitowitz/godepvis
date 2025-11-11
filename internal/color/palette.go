@@ -7,16 +7,16 @@ import (
 )
 
 type HalfPalette struct {
-	PackageName       Color
-	PackageBackground Color
-	FileName          Color
-	FileBackground    Color
-	ImportArrow       Color
+	PackageName       Color `mapstructure:"packagename"`
+	PackageBackground Color `mapstructure:"packagebackground"`
+	FileName          Color `mapstructure:"filename"`
+	FileBackground    Color `mapstructure:"filebackground"`
+	ImportArrow       Color `mapstructure:"importarrow"`
 }
 
 type Palette struct {
-	Base  *HalfPalette
-	Cycle *HalfPalette
+	Base  *HalfPalette `mapstructure:"base"`
+	Cycle *HalfPalette `mapstructure:"cycle"`
 }
 
 var (

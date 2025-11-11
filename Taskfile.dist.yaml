@@ -25,13 +25,13 @@ tasks:
     cmds:
       - go build {{.LDFLAGS}} -o {{.TARGETDIR}}/{{.BIN}} ./cmd/{{.BIN}}
     vars:
-      LDFLAGS: -ldflags "{{.VERSION_FLAGS}}"
+      LDFLAGS: -ldflags "-s -w {{.VERSION_FLAGS}}"
 
   debug:
     cmds:
       - go build {{.LDFLAGS}} -o {{.TARGETDIR}}/{{.BIN}} ./cmd/{{.BIN}}
     vars:
-      LDFLAGS: -ldflags "-s -w {{.VERSION_FLAGS}}"
+      LDFLAGS: -ldflags "{{.VERSION_FLAGS}}"
 
   generate-examples:
     cmds:

@@ -67,6 +67,7 @@ func (v *DependencyVisitor) InOrderNodes() []ast.Node {
 
 func (v *DependencyVisitor) Visit(node ast.Node) ast.Visitor {
 	switch node := node.(type) {
+
 	case *ast.File:
 		v.fileImports = make(map[string]struct{})
 

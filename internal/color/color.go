@@ -9,7 +9,7 @@ import (
 )
 
 type Color struct {
-	color.Color
+	color.Color `mapstructure:"color"`
 }
 
 func (c Color) Hex() string {
@@ -38,15 +38,15 @@ func colorHookFunc() mapstructure.DecodeHookFunc {
 		}
 		hex, err := colors.ParseHEX(in)
 		if err == nil {
-			return hex, nil
+			return Color{hex}, nil
 		}
 		rgb, err := colors.ParseRGB(in)
 		if err == nil {
-			return rgb, nil
+			return Color{rgb}, nil
 		}
 		rgba, err := colors.ParseRGBA(in)
 		if err == nil {
-			return rgba, nil
+			return Color{rgba}, nil
 		}
 
 		if err != nil {

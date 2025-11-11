@@ -10,6 +10,10 @@ import (
 	"github.com/samlitowitz/godepvis/internal"
 )
 
+const (
+	blankIdentifier = "_"
+)
+
 type PrimitiveBuilder struct {
 	modulePath    string
 	moduleRootDir string
@@ -32,6 +36,7 @@ func NewPrimitiveBuilder(modulePath, moduleRootDir string) *PrimitiveBuilder {
 }
 
 func (builder *PrimitiveBuilder) MarkupImportCycles() error {
+	builder.fixupBlankFileImports()
 	stk := NewFileStack()
 	for _, baseFile := range builder.filesByUID {
 		stk.Push(baseFile)
@@ -93,6 +98,26 @@ func (builder *PrimitiveBuilder) markupImportCycles(
 	return nil
 }
 
+func (builder *PrimitiveBuilder) fixupBlankFileImports() {
+	for _, pkg := range builder.packagesByUID {
+		// only packages which have been imported with a blank identifier will have a blank import file
+		if pkg.BlankImportFile == nil {
+			continue
+		}
+		// importing a blank identifier is importing the whole package's imports
+		for _, file := range pkg.Files {
+			// don't add blank file imports to blank file imports
+			if file.IsBlankImport {
+				continue
+			}
+			// add all imports to blank file
+			for impUID, imp := range file.Imports {
+				pkg.BlankImportFile.Imports[impUID] = imp
+			}
+		}
+	}
+}
+
 func (builder *PrimitiveBuilder) AddNode(node ast.Node) error {
 	switch node := node.(type) {
 	case *Package:
@@ -151,19 +176,9 @@ func (builder *PrimitiveBuilder) addPackage(node *Package) error {
 
 	// replace stub with the real thing
 	if pkgExists && pkg.IsStub {
-		// Does this work or do we need a full traversal?
-		copyPackage(pkg, newPkg)
-		for _, file := range pkg.Files {
-			if !file.IsStub {
-				continue
-			}
-			if len(file.Decls) > 0 {
-				continue
-			}
-			// remove stub files with no declarations
-			delete(pkg.Files, file.UID())
-			delete(builder.filesByUID, file.UID())
-		}
+		origBlankImportFile := pkg.BlankImportFile
+		shallowCopyPackage(pkg, newPkg)
+		pkg.BlankImportFile = origBlankImportFile
 	}
 
 	// totally new package
@@ -209,12 +224,15 @@ func (builder *PrimitiveBuilder) addImport(node *ImportSpec) error {
 	imp := &internal.Import{
 		Name:                   node.Name.String(),
 		Path:                   node.Path.Value,
+		IsAliased:              node.IsAliased,
 		ReferencedTypes:        make(map[string]*internal.Decl),
 		ReferencedFilesInCycle: make(map[string]*internal.File),
 	}
 	if node.IsAliased {
-		imp.Name = node.Alias
+		imp.Alias = node.Alias
+		imp.IsBlank = node.Alias == "_"
 	}
+
 	impUID := imp.UID()
 	if _, ok := builder.curFile.Imports[impUID]; ok {
 		return fmt.Errorf("add import: duplicate import: %s \"%s\"", node.Name.String(), node.Path.Value)
@@ -225,8 +243,34 @@ func (builder *PrimitiveBuilder) addImport(node *ImportSpec) error {
 	pkg.IsStub = true
 	if _, ok := builder.packagesByUID[pkg.UID()]; ok {
 		pkg = builder.packagesByUID[pkg.UID()]
+		// if import is blank identifier, `_`, then add stub if missing
+		if imp.IsBlank && pkg.BlankImportFile == nil {
+			blankStub := buildBlankFile(pkg)
+			if _, ok := builder.filesByUID[blankStub.UID()]; !ok {
+				builder.filesByUID[blankStub.UID()] = blankStub
+			}
+			if _, ok := pkg.Files[blankStub.UID()]; !ok {
+				pkg.Files[blankStub.UID()] = builder.filesByUID[blankStub.UID()]
+			}
+			pkg.BlankImportFile = pkg.Files[blankStub.UID()]
+			// ensure import references the blank declaration
+			// necessary for calculating dependencies
+			blankDecl, _ := blankStub.Decls[blankIdentifier]
+			imp.ReferencedTypes[blankDecl.UID()] = blankDecl
+		}
 	} else {
-		fileStub := buildStubFile(pkg)
+		var fileStub *internal.File
+		if !imp.IsBlank {
+			fileStub = buildStubFile(pkg)
+		} else {
+
+			fileStub = buildBlankFile(pkg)
+			pkg.BlankImportFile = fileStub
+			// ensure import references the blank declaration
+			// necessary for calculating dependencies
+			blankDecl, _ := fileStub.Decls[blankIdentifier]
+			imp.ReferencedTypes[blankDecl.UID()] = blankDecl
+		}
 		pkg.Files[fileStub.UID()] = fileStub
 		builder.filesByUID[fileStub.UID()] = fileStub
 		builder.packagesByUID[pkg.UID()] = pkg
@@ -430,7 +474,7 @@ func buildPackage(
 	pkg := &internal.Package{
 		DirName:    dirName,
 		ModulePath: modulePath,
-		ModuleRoot: moduleRootDir,
+		ModuleDir:  moduleRootDir,
 		Name:       name,
 		Files:      make(map[string]*internal.File, fileCount),
 	}
@@ -451,15 +495,37 @@ func buildStubFile(pkg *internal.Package) *internal.File {
 	}
 }
 
-func copyPackage(to, from *internal.Package) {
-	to.DirName = from.DirName
-	to.ModuleRoot = from.ModuleRoot
-	to.Name = from.Name
-	if from.Files != nil {
-		for uid, file := range from.Files {
-			to.Files[uid] = file
-		}
+func buildBlankFile(pkg *internal.Package) *internal.File {
+	blank := &internal.File{
+		Package:  pkg,
+		FileName: blankIdentifier,
+		AbsPath: fmt.Sprintf(
+			"STUB://%s/%s",
+			pkg.UID(),
+			blankIdentifier,
+		),
+		Imports:       make(map[string]*internal.Import),
+		Decls:         make(map[string]*internal.Decl),
+		IsStub:        true,
+		IsBlankImport: true,
 	}
+	decl := buildBlankDecl(blank)
+	blank.Decls[decl.UID()] = decl
+	return blank
+}
+
+func buildBlankDecl(file *internal.File) *internal.Decl {
+	return &internal.Decl{
+		File: file,
+		Name: blankIdentifier,
+	}
+}
+
+func shallowCopyPackage(to, from *internal.Package) {
+	to.DirName = from.DirName
+	to.ModuleDir = from.ModuleDir
+	to.Name = from.Name
+	to.BlankImportFile = from.BlankImportFile
 	to.IsStub = from.IsStub
 	to.InImportCycle = from.InImportCycle
 }
@@ -468,6 +534,15 @@ func copyDeclaration(to, from *internal.Decl) {
 	to.File = from.File
 	to.ReceiverDecl = from.ReceiverDecl
 	to.Name = from.Name
+}
+
+func copyImports(to, from *internal.File) {
+	if from.Imports == nil {
+		return
+	}
+	for uid, imp := range from.Imports {
+		to.Imports[uid] = imp
+	}
 }
 
 type FileStack struct {

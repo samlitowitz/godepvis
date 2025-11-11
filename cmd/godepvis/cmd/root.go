@@ -2,26 +2,27 @@ package cmd
 
 import (
 	"fmt"
-	internalAST "github.com/samlitowitz/godepvis/internal/ast"
-	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal"
+	"github.com/samlitowitz/godepvis/internal/color"
 	"github.com/samlitowitz/godepvis/internal/dot"
 	"github.com/samlitowitz/godepvis/internal/modfile"
+	"github.com/samlitowitz/godepvis/internal/primitives"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
-	ConfigFlag     = "config"
-	DebugFlag      = "debug"
+	PaletteFlag    = "palette"
 	DotFlag        = "dot"
 	PathFlag       = "path"
 	ResolutionFlag = "resolution"
 )
 
 func Root() *cobra.Command {
-	var resolution *resolutionFlag
+	var resolution resolutionFlag
 	rootCmd := &cobra.Command{
 		Use:          "godepvis",
 		Short:        "Go Dependency Visualizer",
@@ -32,11 +33,7 @@ func Root() *cobra.Command {
 				return self.Help()
 			}
 
-			configFile, err := self.Flags().GetString(ConfigFlag)
-			if err != nil {
-				return err
-			}
-			debug, err := self.Flags().GetBool(DebugFlag)
+			paletteFile, err := self.Flags().GetString(PaletteFlag)
 			if err != nil {
 				return err
 			}
@@ -49,19 +46,15 @@ func Root() *cobra.Command {
 				return nil
 			}
 
-			cfg := config.Default()
-			if configFile != "" {
-				cfg, err = config.FromYamlFile(configFile)
+			palette := color.DefaultPalette
+			if paletteFile != "" {
+				palette, err = color.GetPaletteFromFile(paletteFile)
 				if err != nil {
 					return err
 				}
-				if cfg == nil {
-					cfg = config.Default()
+				if palette == nil {
+					palette = color.DefaultPalette
 				}
-			}
-
-			if debug {
-				cfg.Debug.SetOutput(os.Stdout)
 			}
 
 			absPath, err := filepath.Abs(path)
@@ -73,37 +66,24 @@ func Root() *cobra.Command {
 			if err != nil {
 				log.Fatal(fmt.Errorf("failed to find go.mod: %w", err))
 			}
-			cfg.Debug.Printf("go.mod file: %s", goModFile)
 
 			modulePath, err := modfile.GetModulePath(goModFile)
 			if err != nil {
 				return err
 			}
-			moduleRootDir := filepath.Dir(goModFile)
-			cfg.Debug.Printf("Module Path: %s", modulePath)
-			cfg.Debug.Printf("Module Root Directory: %s", moduleRootDir)
+			moduleDir := filepath.Dir(goModFile)
 
-			switch resolution {
-			case "file":
-				cfg.Resolution = config.FileResolution
-				if err != nil {
-					return err
-				}
-			case "package":
-				cfg.Resolution = config.PackageResolution
-				if err != nil {
-					return err
-				}
-			default:
-				log.Fatal("resolution must be 'file' or 'package'")
-			}
-
-			primitivePkgs, err := internalAST.BuildPrimitivesForModule(modulePath, moduleRootDir)
+			pkgs, err := primitives.BuildForModule(modulePath, moduleDir)
 			if err != nil {
-				log.Fatal(fmt.Errorf("build primitives for module: %w", err))
+				log.Fatal(err)
 			}
 
-			output, err := dot.Marshal(cfg, modulePath, primitivePkgs)
+			output, err := dot.Marshal(
+				modulePath,
+				pkgs,
+				dot.WithResolution(internal.Resolution(resolution.String())),
+				dot.WithPalette(*palette),
+			)
 			if err != nil {
 				log.Fatal(fmt.Errorf("marshal dependency graph: %w", err))
 			}
@@ -122,11 +102,10 @@ func Root() *cobra.Command {
 		},
 	}
 
-	rootCmd.Flags().String(ConfigFlag, "", "configuration file")
-	rootCmd.Flags().Bool(DebugFlag, false, "emit debug output")
+	rootCmd.Flags().String(PaletteFlag, "", "palette file")
 	rootCmd.Flags().String(DotFlag, "", "DOT file to output")
 	rootCmd.Flags().String(PathFlag, "", "files to process")
-	rootCmd.Flags().Var(resolution, ResolutionFlag, "resolution at which to visualize dependencies")
+	rootCmd.Flags().Var(&resolution, ResolutionFlag, "resolution at which to visualize dependencies")
 
 	err := rootCmd.MarkFlagRequired(DotFlag)
 	if err != nil {
@@ -136,29 +115,18 @@ func Root() *cobra.Command {
 	return rootCmd
 }
 
-const (
-	resolutionFlagFile    = "file"
-	resolutionFlagPackage = "package"
-)
-
-type resolutionFlag string
+type resolutionFlag []byte
 
 func (rf *resolutionFlag) String() string {
 	return string(*rf)
 }
 
 func (rf *resolutionFlag) Set(v string) error {
-	switch v {
-	case resolutionFlagFile, resolutionFlagPackage:
+	if internal.IsValidResolution(internal.Resolution(v)) {
 		*rf = resolutionFlag(v)
 		return nil
-	default:
-		return fmt.Errorf(
-			`must be "%s" or "%s"`,
-			resolutionFlagFile,
-			resolutionFlagPackage,
-		)
 	}
+	return fmt.Errorf("must be one of: %s", strings.Join(internal.ValidResolutions(), ", "))
 }
 
 func (rf *resolutionFlag) Type() string {
