@@ -1,7 +1,7 @@
-package color_test
+package config_test
 
 import (
-	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/internal/config"
 	"os"
 	"runtime"
 	"testing"
@@ -29,14 +29,14 @@ func TestFromYamlFile_Empty(t *testing.T) {
 
 	configPath := tmpDir + string(os.PathSeparator) + "config.yaml"
 	writeConfig(t, configPath, "")
-	cfg, err := color.FromYamlFile(configPath)
+	cfg, err := config.FromYamlFile(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if cfg == nil {
 		t.Fatal("no config created")
 	}
-	expected := color.Default()
+	expected := config.Default()
 
 	compareHalfPalette(t, expected.Palette.Base, cfg.Palette.Base)
 	compareHalfPalette(t, expected.Palette.Cycle, cfg.Palette.Cycle)
@@ -82,14 +82,14 @@ palette:
     importArrow: "#FB6F92"
 `
 	writeConfig(t, configPath, configData)
-	cfg, err := color.FromYamlFile(configPath)
+	cfg, err := config.FromYamlFile(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if cfg == nil {
 		t.Fatal("no config created")
 	}
-	expected := color.Default()
+	expected := config.Default()
 
 	compareHalfPalette(t, expected.Palette.Base, cfg.Palette.Base)
 	compareHalfPalette(t, expected.Palette.Cycle, cfg.Palette.Cycle)

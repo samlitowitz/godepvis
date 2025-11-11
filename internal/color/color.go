@@ -2,7 +2,10 @@ package color
 
 import (
 	"fmt"
+	"github.com/go-playground/colors"
+	"github.com/mitchellh/mapstructure"
 	"image/color"
+	"reflect"
 )
 
 type Color struct {
@@ -15,4 +18,40 @@ func (c Color) Hex() string {
 	g = g >> 8
 	b = b >> 8
 	return fmt.Sprintf("#%02x%02x%02x", r, g, b)
+}
+
+func colorHookFunc() mapstructure.DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{},
+	) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t != reflect.TypeOf(Color{}) {
+			return data, nil
+		}
+		in := data.(string)
+		if in == "" {
+			return nil, colors.ErrBadColor
+		}
+		hex, err := colors.ParseHEX(in)
+		if err == nil {
+			return hex, nil
+		}
+		rgb, err := colors.ParseRGB(in)
+		if err == nil {
+			return rgb, nil
+		}
+		rgba, err := colors.ParseRGBA(in)
+		if err == nil {
+			return rgba, nil
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		return nil, colors.ErrBadColor
+	}
 }

@@ -2,7 +2,7 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/config-schema/config.json",
 	"title": "Config",
-	"description": "Configuration for Go Import Cycle (github.com/samlitowitz/godepvis)",
+	"description": "Configuration for Go dependency visualization (github.com/samlitowitz/godepvis)",
 	"type": "object",
 	"properties": {
 		"resolution": {

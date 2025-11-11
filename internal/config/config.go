@@ -1,7 +1,8 @@
-package color
+package config
 
 import (
 	"fmt"
+	"github.com/samlitowitz/godepvis/internal/color"
 	stdColor "image/color"
 	"io"
 	"log"
@@ -18,11 +19,21 @@ const (
 	PackageResolution Resolution = iota
 )
 
-type Config struct {
-	Palette *Palette
+type OutputType int
 
+const (
+	OutputTypeDot OutputType = iota
+)
+
+type Config struct {
 	Resolution Resolution
-	Debug      *log.Logger
+	ModulePath string
+
+	OutputTyp  OutputType
+	OutputFile string
+	Palette    *color.Palette
+
+	Debug *log.Logger
 }
 
 type ExternalPalette struct {
@@ -43,7 +54,7 @@ type externalConfig struct {
 
 func Default() *Config {
 	return &Config{
-		Palette:    DefaultPalette,
+		Palette:    color.DefaultPalette,
 		Resolution: FileResolution,
 		Debug:      log.New(io.Discard, "Debug: ", log.LstdFlags),
 	}
@@ -110,7 +121,7 @@ func fromExternalConfig(to *Config, from *externalConfig) error {
 	return nil
 }
 
-func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
+func fromExternalPalette(to *color.HalfPalette, from *ExternalPalette) error {
 	if from == nil {
 		return nil
 	}
@@ -144,7 +155,7 @@ func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.PackageName = Color{Color: c}
+			to.PackageName = color.Color{Color: c}
 		}
 	}
 	if from.PackageBackground != "" {
@@ -153,7 +164,7 @@ func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.PackageBackground = Color{Color: c}
+			to.PackageBackground = color.Color{Color: c}
 		}
 	}
 	if from.FileName != "" {
@@ -162,7 +173,7 @@ func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.FileName = Color{Color: c}
+			to.FileName = color.Color{Color: c}
 		}
 	}
 	if from.FileBackground != "" {
@@ -171,7 +182,7 @@ func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.FileBackground = Color{Color: c}
+			to.FileBackground = color.Color{Color: c}
 		}
 	}
 	if from.ImportArrow != "" {
@@ -180,7 +191,7 @@ func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.ImportArrow = Color{Color: c}
+			to.ImportArrow = color.Color{Color: c}
 		}
 	}
 	return nil

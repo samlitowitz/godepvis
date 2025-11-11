@@ -4,24 +4,24 @@ import (
 	"bytes"
 	"cmp"
 	"fmt"
-	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/internal/config"
 	"slices"
 	"strings"
 
 	"github.com/samlitowitz/godepvis/internal"
 )
 
-func Marshal(cfg *color.Config, modulePath string, pkgs []*internal.Package) ([]byte, error) {
+func Marshal(cfg *config.Config, modulePath string, pkgs []*internal.Package) ([]byte, error) {
 	slices.SortFunc(pkgs, pkgCmpFn)
 
 	buf := &bytes.Buffer{}
 
 	writeHeader(buf, modulePath)
 	switch cfg.Resolution {
-	case color.FileResolution:
+	case config.FileResolution:
 		writeNodeDefsForFileResolution(buf, cfg, pkgs)
 		writeRelationshipsForFileResolution(buf, cfg, pkgs)
-	case color.PackageResolution:
+	case config.PackageResolution:
 		writeNodeDefsForPackageResolution(buf, cfg, pkgs)
 		writeRelationshipsForPackageResolution(buf, cfg, pkgs)
 	}

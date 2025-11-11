@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	internalAST "github.com/samlitowitz/godepvis/internal/ast"
-	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/internal/config"
 	"github.com/samlitowitz/godepvis/internal/dot"
 	"github.com/samlitowitz/godepvis/internal/modfile"
 	"github.com/spf13/cobra"
@@ -21,7 +21,7 @@ const (
 )
 
 func Root() *cobra.Command {
-	var resolution resolutionFlag = resolutionFlagFile
+	var resolution *resolutionFlag
 	rootCmd := &cobra.Command{
 		Use:          "godepvis",
 		Short:        "Go Dependency Visualizer",
@@ -49,14 +49,14 @@ func Root() *cobra.Command {
 				return nil
 			}
 
-			cfg := color.Default()
+			cfg := config.Default()
 			if configFile != "" {
-				cfg, err = color.FromYamlFile(configFile)
+				cfg, err = config.FromYamlFile(configFile)
 				if err != nil {
 					return err
 				}
 				if cfg == nil {
-					cfg = color.Default()
+					cfg = config.Default()
 				}
 			}
 
@@ -85,12 +85,12 @@ func Root() *cobra.Command {
 
 			switch resolution {
 			case "file":
-				cfg.Resolution = color.FileResolution
+				cfg.Resolution = config.FileResolution
 				if err != nil {
 					return err
 				}
 			case "package":
-				cfg.Resolution = color.PackageResolution
+				cfg.Resolution = config.PackageResolution
 				if err != nil {
 					return err
 				}
@@ -126,7 +126,7 @@ func Root() *cobra.Command {
 	rootCmd.Flags().Bool(DebugFlag, false, "emit debug output")
 	rootCmd.Flags().String(DotFlag, "", "DOT file to output")
 	rootCmd.Flags().String(PathFlag, "", "files to process")
-	rootCmd.Flags().Var(&resolution, ResolutionFlag, "resolution at which to visualize dependencies")
+	rootCmd.Flags().Var(resolution, ResolutionFlag, "resolution at which to visualize dependencies")
 
 	err := rootCmd.MarkFlagRequired(DotFlag)
 	if err != nil {

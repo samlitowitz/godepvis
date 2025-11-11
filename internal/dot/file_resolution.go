@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/internal/config"
 )
 
-func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *color.Config, pkgs []*internal.Package) {
+func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
 	var err error
 	clusterDefHeader := `
 	subgraph "cluster_%s" {
@@ -76,7 +76,7 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, cfg *color.Config, pkgs [
 	}
 }
 
-func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *color.Config, pkgs []*internal.Package) {
+func writeRelationshipsForFileResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
 	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`
