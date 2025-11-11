@@ -3,7 +3,7 @@ package b
 import (
 	"log"
 
-	"github.com/fake/no-circular-dependencies/a"
+	"github.com/samlitowitz/godepvis/examples/independent/a"
 )
 
 func Fn() {

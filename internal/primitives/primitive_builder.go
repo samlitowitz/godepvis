@@ -1,4 +1,4 @@
-package ast
+package primitives
 
 import (
 	"errors"

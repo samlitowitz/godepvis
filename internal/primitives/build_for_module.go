@@ -1,55 +1,33 @@
-package ast
+package primitives
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/primitives"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"io/fs"
-	"path/filepath"
-	"strings"
+	"golang.org/x/tools/go/packages"
 )
 
-func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*internal.Package, error) {
-	var filesToParse []string
-	err := filepath.WalkDir(
-		moduleRootDir,
-		func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if !d.IsDir() {
-				return nil
-			}
-			if strings.HasPrefix(d.Name(), ".") {
-				return fs.SkipDir
-			}
-			if strings.HasPrefix(d.Name(), "_") {
-				return fs.SkipDir
-			}
-			path, err = filepath.Abs(path)
-			if err != nil {
-				return err
-			}
-			filesToParse = append(filesToParse, path)
-			return nil
-		},
-	)
+func BuildForModule(
+	modulePath,
+	moduleDir string,
+	buildFlags []string,
+) ([]*internal.Package, error) {
+	filesToParse, err := getFilesForModule(moduleDir, buildFlags)
 	if err != nil {
-		return nil, fmt.Errorf("enumerate files to parse: %w", err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithCancelCause(context.Background())
 	defer cancel(nil)
 
-	depVis, nodeOut := primitives.NewDependencyVisitor()
+	depVis, nodeOut := NewDependencyVisitor()
 	defer depVis.Close()
 
-	builder := primitives.NewPrimitiveBuilder(modulePath, moduleRootDir)
+	builder := NewPrimitiveBuilder(modulePath, moduleDir)
 
 	go func() {
 		err := buildDependencyGraph(builder, nodeOut, ctx.Done())
@@ -61,14 +39,11 @@ func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*inter
 	go func() {
 		for _, file := range filesToParse {
 			fset := token.NewFileSet()
-			pkgs, err := parser.ParseDir(fset, file, nil, 0)
+			pkg, err := parser.ParseFile(fset, file, nil, 0)
 			if err != nil {
 				cancel(fmt.Errorf("parse files: %s: %w", file, err))
 			}
-
-			for _, pkg := range pkgs {
-				ast.Walk(depVis, pkg)
-			}
+			ast.Walk(depVis, pkg)
 		}
 		cancel(nil)
 	}()
@@ -86,8 +61,34 @@ func BuildPrimitivesForModule(modulePath string, moduleRootDir string) ([]*inter
 	return builder.Packages(), nil
 }
 
+func getFilesForModule(
+	moduleDir string,
+	buildFlags []string,
+) ([]string, error) {
+	pkgCfg := &packages.Config{
+		Mode:       packages.LoadFiles | packages.LoadImports,
+		Dir:        moduleDir,
+		BuildFlags: buildFlags,
+	}
+
+	pkgs, err := packages.Load(pkgCfg, "./...")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load module: %w", err)
+	}
+
+	var filesToParse []string
+	iter := packages.Postorder(pkgs)
+	for pkg := range iter {
+		if len(pkg.Errors) > 0 {
+			return nil, fmt.Errorf("errors loading module: %w", pkg.Errors[0])
+		}
+		filesToParse = append(filesToParse, pkg.CompiledGoFiles...)
+	}
+	return filesToParse, nil
+}
+
 func buildDependencyGraph(
-	builder *primitives.PrimitiveBuilder,
+	builder *PrimitiveBuilder,
 	nodeOut <-chan ast.Node,
 	done <-chan struct{},
 ) error {

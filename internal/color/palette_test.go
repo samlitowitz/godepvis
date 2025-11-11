@@ -1,7 +1,9 @@
 package color_test
 
 import (
+	"github.com/google/go-cmp/cmp"
 	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/internal/test"
 	"gopkg.in/yaml.v3"
 	"os"
 	"runtime"
@@ -12,7 +14,7 @@ func TestGetPaletteFromFile(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -40,20 +42,20 @@ func TestGetPaletteFromFile(t *testing.T) {
 }
 
 func compareHalfPalette(t *testing.T, expected, actual *color.HalfPalette) {
-	if expected.PackageName.Hex() != actual.PackageName.Hex() {
-		t.Errorf("PackageName: expected %s got %s", expected.PackageName.Hex(), actual.PackageName.Hex())
+	if diff := cmp.Diff(expected.PackageName.Hex(), actual.PackageName.Hex()); diff != "" {
+		t.Fatal(test.Mismatch("PackageName: ", diff))
 	}
-	if expected.PackageBackground.Hex() != actual.PackageBackground.Hex() {
-		t.Errorf("PackageBackground: expected %s got %s", expected.PackageBackground.Hex(), actual.PackageBackground.Hex())
+	if diff := cmp.Diff(expected.PackageBackground.Hex(), actual.PackageBackground.Hex()); diff != "" {
+		t.Fatal(test.Mismatch("PackageBackground: ", diff))
 	}
-	if expected.FileName.Hex() != actual.FileName.Hex() {
-		t.Errorf("FileName: expected %s got %s", expected.FileName.Hex(), actual.FileName.Hex())
+	if diff := cmp.Diff(expected.FileName.Hex(), actual.FileName.Hex()); diff != "" {
+		t.Fatal(test.Mismatch("FileName: ", diff))
 	}
-	if expected.FileBackground.Hex() != actual.FileBackground.Hex() {
-		t.Errorf("FileBackground: expected %s got %s", expected.FileBackground.Hex(), actual.FileBackground.Hex())
+	if diff := cmp.Diff(expected.FileBackground.Hex(), actual.FileBackground.Hex()); diff != "" {
+		t.Fatal(test.Mismatch("FileBackground: ", diff))
 	}
-	if expected.ImportArrow.Hex() != actual.ImportArrow.Hex() {
-		t.Errorf("ImportArrow: expected %s got %s", expected.ImportArrow.Hex(), actual.ImportArrow.Hex())
+	if diff := cmp.Diff(expected.ImportArrow.Hex(), actual.ImportArrow.Hex()); diff != "" {
+		t.Fatal(test.Mismatch("ImportArrow: ", diff))
 	}
 }
 
@@ -73,26 +75,5 @@ func writePalette(t *testing.T, filePath string, p *color.Palette) {
 	if err != nil {
 		t.Fatalf("writePalette: %v", err)
 
-	}
-}
-
-// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L553
-func chtmpdir(t *testing.T) (restore func()) {
-	oldwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	d, err := os.MkdirTemp("", "test")
-	if err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	if err := os.Chdir(d); err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	return func() {
-		if err := os.Chdir(oldwd); err != nil {
-			t.Fatalf("chtmpdir: %v", err)
-		}
-		_ = os.RemoveAll(d)
 	}
 }

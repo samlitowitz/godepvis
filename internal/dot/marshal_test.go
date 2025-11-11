@@ -3,6 +3,7 @@ package dot_test
 import (
 	"context"
 	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal/primitives"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -12,8 +13,6 @@ import (
 	"testing"
 
 	"github.com/samlitowitz/godepvis/internal/dot"
-
-	internalAST "github.com/samlitowitz/godepvis/internal/ast"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -115,8 +114,8 @@ func BFn() {
 	for _, treeNode := range tree.entries {
 		testCase := treeNode.name
 		dirOut := make(chan string)
-		depVis, nodeOut := internalAST.NewDependencyVisitor()
-		builder := internalAST.NewPrimitiveBuilder(
+		depVis, nodeOut := primitives.NewDependencyVisitor()
+		builder := primitives.NewPrimitiveBuilder(
 			"example.com/"+testCase,
 			tmpDir+string(os.PathSeparator)+"testdata"+string(os.PathSeparator)+testCase,
 		)
@@ -368,8 +367,8 @@ func BFn() {
 	for _, treeNode := range tree.entries {
 		testCase := treeNode.name
 		dirOut := make(chan string)
-		depVis, nodeOut := internalAST.NewDependencyVisitor()
-		builder := internalAST.NewPrimitiveBuilder(
+		depVis, nodeOut := primitives.NewDependencyVisitor()
+		builder := primitives.NewPrimitiveBuilder(
 			"example.com/"+testCase,
 			tmpDir+string(os.PathSeparator)+"testdata"+string(os.PathSeparator)+testCase,
 		)

@@ -1,6 +1,6 @@
 digraph {
 	labelloc="t";
-	label="github.com/samlitowitz/godepvis/examples/none";
+	label="github.com/fake/no-circular-dependencies";
 	rankdir="TB";
 	node [shape="rect"];
 

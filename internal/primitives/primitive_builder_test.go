@@ -1,9 +1,10 @@
-package ast_test
+package primitives_test
 
 import (
 	"context"
 	"fmt"
 	"github.com/samlitowitz/godepvis/internal/primitives"
+	"github.com/samlitowitz/godepvis/internal/test"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -18,7 +19,7 @@ func TestPrimitiveBuilder_MarkupImportCycles_None(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -249,7 +250,7 @@ func TestPrimitiveBuilder_MarkupImportCycles_Simple(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -493,7 +494,7 @@ func TestPrimitiveBuilder_MarkupImportCycles_Transitive(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -756,7 +757,7 @@ func TestPrimitiveBuilder_MarkupImportCycles_MultipleIndependent(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1021,7 +1022,7 @@ func TestPrimitiveBuilder_MarkupImportCycles_MultipleInterlinked(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1286,7 +1287,7 @@ func TestPrimitiveBuilder_AddNode_Packages(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1557,7 +1558,7 @@ func TestPrimitiveBuilder_AddNode_Files(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1836,7 +1837,7 @@ func TestPrimitiveBuilder_AddNode_Imports(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -2185,7 +2186,7 @@ func TestPrimitiveBuilder_AddNode_Imports_StubFixups(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -2527,7 +2528,7 @@ func TestPrimitiveBuilder_AddNode_FunctionDeclarations(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -2868,7 +2869,7 @@ func TestPrimitiveBuilder_AddNode_GeneralDeclarations(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -3213,7 +3214,7 @@ func TestPrimitiveBuilder_AddNode_SelectExpressions(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 

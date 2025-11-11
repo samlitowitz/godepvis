@@ -1,8 +1,9 @@
-package ast_test
+package primitives_test
 
 import (
 	"context"
 	internalAST "github.com/samlitowitz/godepvis/internal/primitives"
+	"github.com/samlitowitz/godepvis/internal/test"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -17,7 +18,7 @@ func TestDependencyVisitor_Visit_EmitsPackages(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -280,7 +281,7 @@ func TestDependencyVisitor_Visit_EmitsFiles(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -546,7 +547,7 @@ func TestDependencyVisitor_Visit_EmitsImportSpecs(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -710,7 +711,7 @@ func TestDependencyVisitor_Visit_EmitsConstantsTypesAndVars(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -948,7 +949,7 @@ func TestDependencyVisitor_Visit_EmitsFunctions(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1121,7 +1122,7 @@ func TestDependencyVisitor_Visit_EmitsSelectorExprs(t *testing.T) {
 	// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
 	// -- START -- //
 	if runtime.GOOS == "ios" {
-		restore := chtmpdir(t)
+		restore := test.Chtmpdir(t)
 		defer restore()
 	}
 
@@ -1336,25 +1337,4 @@ func makeTree(t *testing.T, tree *Node) map[string]struct{} {
 		}
 	})
 	return directories
-}
-
-// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L553
-func chtmpdir(t *testing.T) (restore func()) {
-	oldwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	d, err := os.MkdirTemp("", "test")
-	if err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	if err := os.Chdir(d); err != nil {
-		t.Fatalf("chtmpdir: %v", err)
-	}
-	return func() {
-		if err := os.Chdir(oldwd); err != nil {
-			t.Fatalf("chtmpdir: %v", err)
-		}
-		_ = os.RemoveAll(d)
-	}
 }
