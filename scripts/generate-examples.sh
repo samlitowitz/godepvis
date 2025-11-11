@@ -20,17 +20,17 @@ for d in $EXAMPLES_DIR/*/ ; do
     fi
 
     cfg=""
-    if [ -f "$d/config.yaml" ]; then
-      cfg="-config $d/config.yaml"
+    if [ -f "${d}config.yaml" ]; then
+      cfg="--config ${d}config.yaml"
     fi
 
     echo "Processing $d"
 
     echo "File Resolution"
-    godepvis -debug $cfg -path $d -resolution file -dot $outputDir/file.dot
+    godepvis --debug $cfg --path $d --resolution file --dot $outputDir/file.dot
     dot -Tpng -o $outputDir/file.png $outputDir/file.dot
 
     echo "Package Resolution"
-    godepvis -debug $cfg -path $d -resolution package -dot $outputDir/package.dot
+    godepvis --debug $cfg --path $d --resolution package --dot $outputDir/package.dot
     dot -Tpng -o $outputDir/package.png $outputDir/package.dot
 done

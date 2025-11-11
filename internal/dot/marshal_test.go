@@ -2,6 +2,7 @@ package dot_test
 
 import (
 	"context"
+	"github.com/samlitowitz/godepvis/internal/color"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -10,7 +11,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/samlitowitz/godepvis/internal/config"
 	"github.com/samlitowitz/godepvis/internal/dot"
 
 	internalAST "github.com/samlitowitz/godepvis/internal/ast"
@@ -259,8 +259,8 @@ func BFn() {
 }
 `
 
-		cfg := config.Default()
-		cfg.Resolution = config.FileResolution
+		cfg := color.Default()
+		cfg.Resolution = color.FileResolution
 		actual, err := dot.Marshal(cfg, "example.com/"+testCase, builder.Packages())
 		if err != nil {
 			t.Fatal(err)
@@ -488,8 +488,8 @@ func BFn() {
 }
 `
 
-		cfg := config.Default()
-		cfg.Resolution = config.PackageResolution
+		cfg := color.Default()
+		cfg.Resolution = color.PackageResolution
 		actual, err := dot.Marshal(cfg, "example.com/"+testCase, builder.Packages())
 		if err != nil {
 			t.Fatal(err)

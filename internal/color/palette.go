@@ -18,7 +18,7 @@ type Palette struct {
 }
 
 var (
-	Default = &Palette{
+	DefaultPalette = &Palette{
 		Base: &HalfPalette{
 			PackageName: Color{
 				Color: &color.RGBA{

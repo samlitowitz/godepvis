@@ -1,4 +1,4 @@
-package config
+package color
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/go-playground/colors"
-	inColor "github.com/samlitowitz/godepvis/internal/color"
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,7 +19,7 @@ const (
 )
 
 type Config struct {
-	Palette *inColor.Palette
+	Palette *Palette
 
 	Resolution Resolution
 	Debug      *log.Logger
@@ -44,7 +43,7 @@ type externalConfig struct {
 
 func Default() *Config {
 	return &Config{
-		Palette:    inColor.Default,
+		Palette:    DefaultPalette,
 		Resolution: FileResolution,
 		Debug:      log.New(io.Discard, "Debug: ", log.LstdFlags),
 	}
@@ -111,7 +110,7 @@ func fromExternalConfig(to *Config, from *externalConfig) error {
 	return nil
 }
 
-func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
+func fromExternalPalette(to *HalfPalette, from *ExternalPalette) error {
 	if from == nil {
 		return nil
 	}
@@ -145,7 +144,7 @@ func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.PackageName = inColor.Color{Color: c}
+			to.PackageName = Color{Color: c}
 		}
 	}
 	if from.PackageBackground != "" {
@@ -154,7 +153,7 @@ func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.PackageBackground = inColor.Color{Color: c}
+			to.PackageBackground = Color{Color: c}
 		}
 	}
 	if from.FileName != "" {
@@ -163,7 +162,7 @@ func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.FileName = inColor.Color{Color: c}
+			to.FileName = Color{Color: c}
 		}
 	}
 	if from.FileBackground != "" {
@@ -172,7 +171,7 @@ func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.FileBackground = inColor.Color{Color: c}
+			to.FileBackground = Color{Color: c}
 		}
 	}
 	if from.ImportArrow != "" {
@@ -181,7 +180,7 @@ func fromExternalPalette(to *inColor.HalfPalette, from *ExternalPalette) error {
 			return err
 		}
 		if c != nil {
-			to.ImportArrow = inColor.Color{Color: c}
+			to.ImportArrow = Color{Color: c}
 		}
 	}
 	return nil

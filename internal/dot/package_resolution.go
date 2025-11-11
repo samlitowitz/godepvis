@@ -3,12 +3,11 @@ package dot
 import (
 	"bytes"
 	"fmt"
-
 	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/config"
+	"github.com/samlitowitz/godepvis/internal/color"
 )
 
-func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *color.Config, pkgs []*internal.Package) {
 	var err error
 	nodeDef := `
 	"%s" [label="%s", style="filled", fontcolor="%s", fillcolor="%s"];`
@@ -41,7 +40,7 @@ func writeNodeDefsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pk
 	}
 }
 
-func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *config.Config, pkgs []*internal.Package) {
+func writeRelationshipsForPackageResolution(buf *bytes.Buffer, cfg *color.Config, pkgs []*internal.Package) {
 	var err error
 	edgeDef := `
 	"%s" -> "%s" [color="%s"];`

@@ -1,13 +1,10 @@
-package config_test
+package color_test
 
 import (
+	"github.com/samlitowitz/godepvis/internal/color"
 	"os"
 	"runtime"
 	"testing"
-
-	"github.com/samlitowitz/godepvis/internal/color"
-
-	"github.com/samlitowitz/godepvis/internal/config"
 )
 
 func TestFromYamlFile_Empty(t *testing.T) {
@@ -32,14 +29,14 @@ func TestFromYamlFile_Empty(t *testing.T) {
 
 	configPath := tmpDir + string(os.PathSeparator) + "config.yaml"
 	writeConfig(t, configPath, "")
-	cfg, err := config.FromYamlFile(configPath)
+	cfg, err := color.FromYamlFile(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if cfg == nil {
 		t.Fatal("no config created")
 	}
-	expected := config.Default()
+	expected := color.Default()
 
 	compareHalfPalette(t, expected.Palette.Base, cfg.Palette.Base)
 	compareHalfPalette(t, expected.Palette.Cycle, cfg.Palette.Cycle)
@@ -85,20 +82,20 @@ palette:
     importArrow: "#FB6F92"
 `
 	writeConfig(t, configPath, configData)
-	cfg, err := config.FromYamlFile(configPath)
+	cfg, err := color.FromYamlFile(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if cfg == nil {
 		t.Fatal("no config created")
 	}
-	expected := config.Default()
+	expected := color.Default()
 
 	compareHalfPalette(t, expected.Palette.Base, cfg.Palette.Base)
 	compareHalfPalette(t, expected.Palette.Cycle, cfg.Palette.Cycle)
 }
 
-func compareHalfPalette(t *testing.T, expected, actual *color.HalfPalette) {
+func compareHalfPalette(t *testing.T, expected, actual *HalfPalette) {
 	if expected.PackageName.Hex() != actual.PackageName.Hex() {
 		t.Errorf("PackageName: expected %s got %s", expected.PackageName.Hex(), actual.PackageName.Hex())
 	}

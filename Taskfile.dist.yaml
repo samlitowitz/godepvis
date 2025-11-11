@@ -14,6 +14,7 @@ vars:
     sh: cd .. && pwd
   PROJECT_PROTO_OUT:
     sh: cd ../../../ && pwd
+  VERSION_FLAGS: '-X main.Version={{.VERSION}} -X main.Build={{.BUILD}} -X main.Commit={{.COMMIT}}'
 
 tasks:
   clean:
@@ -24,13 +25,13 @@ tasks:
     cmds:
       - go build {{.LDFLAGS}} -o {{.TARGETDIR}}/{{.BIN}} ./cmd/{{.BIN}}
     vars:
-      LDFLAGS: -ldflags "-X main.Date={{.BUILD}} -X main.Commit={{.COMMIT}}"
+      LDFLAGS: -ldflags "{{.VERSION_FLAGS}}"
 
   debug:
     cmds:
       - go build {{.LDFLAGS}} -o {{.TARGETDIR}}/{{.BIN}} ./cmd/{{.BIN}}
     vars:
-      LDFLAGS: -ldflags "-s -w -X main.Version={{.VERSION}} -X main.Date={{.BUILD}} -X main.Commit={{.COMMIT}}"
+      LDFLAGS: -ldflags "-s -w {{.VERSION_FLAGS}}"
 
   generate-examples:
     cmds:
