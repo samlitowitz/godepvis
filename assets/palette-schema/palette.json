@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/palette-schema/palette.json",
+	"title": "Color Palette",
+	"description": "Color palette for use with Go Dependency Visualizer (github.com/samlitowitz/godepvis)",
+	"type": "object",
+	"properties": {
+		"base": {
+			"description": "Colors used for packages and files not in a cycle",
+			"$ref": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/palette-schema/half-palette.json"
+		},
+		"cycle": {
+			"description": "Colors used for packages and files in a cycle",
+			"$ref": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/palette-schema/half-palette.json"
+		}
+	}
+}

@@ -27,7 +27,7 @@ func TestFromYamlFile_Empty(t *testing.T) {
 	defer os.Chdir(origDir)
 	// -- END -- //
 
-	configPath := tmpDir + string(os.PathSeparator) + "config.yaml"
+	configPath := tmpDir + string(os.PathSeparator) + "palette.yaml"
 	writeConfig(t, configPath, "")
 	cfg, err := config.FromYamlFile(configPath)
 	if err != nil {
@@ -64,7 +64,7 @@ func TestFromYamlFile_Entire(t *testing.T) {
 	defer os.Chdir(origDir)
 	// -- END -- //
 
-	configPath := tmpDir + string(os.PathSeparator) + "config.yaml"
+	configPath := tmpDir + string(os.PathSeparator) + "palette.yaml"
 	configData := `
 resolution: "file"
 palette:

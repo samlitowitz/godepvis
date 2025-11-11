@@ -1,8 +1,8 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/config-schema/half-palette.json",
-	"title": "Config",
-	"description": "Half-palette definition for Go Import Cycle (github.com/samlitowitz/godepvis)",
+	"$id": "https://raw.githubusercontent.com/samlitowitz/godepvis/refs/heads/master/assets/palette-schema/half-palette.json",
+	"title": "Half-palette",
+	"description": "Half-palette definition for use with Go Dependency Visualizer (github.com/samlitowitz/godepvis)",
 	"type": "object",
 	"properties": {
 		"packageName": {

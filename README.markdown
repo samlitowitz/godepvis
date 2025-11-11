@@ -26,24 +26,23 @@ dot -Tpng -o assets/example.png imports.dot
 Red lines indicate import cycles between packages.
 
 ## Configuration
-The configuration file follows the JSON Schema outlined in [assets/config-schema](assets/config-schema).
+The palette file follows the JSON Schema outlined in [assets/palette-schema](assets/palette-schema).
 
-The [simple-config example](examples/simple-config) uses the following schema...
+The [simple-palette example](examples/simple-palette) uses the following schema...
 
 ```yaml
-palette:
-  base:
-    packageName: "rgb(174, 209, 230)"
-    packageBackground: "rgb(207, 232, 239)"
-    fileName: "rgb(160, 196, 226)"
-    fileBackground: "rgb(198, 219, 240)"
-    importArrow: "rgb(133, 199, 222)"
-  cycle:
-    packageName: "#FFB3C6"
-    packageBackground: "#FFE5EC"
-    fileName: "#FF8FAB"
-    fileBackground: "#FFC2D1"
-    importArrow: "#FB6F92"
+base:
+  packageName: "rgb(174, 209, 230)"
+  packageBackground: "rgb(207, 232, 239)"
+  fileName: "rgb(160, 196, 226)"
+  fileBackground: "rgb(198, 219, 240)"
+  importArrow: "rgb(133, 199, 222)"
+cycle:
+  packageName: "#FFB3C6"
+  packageBackground: "#FFE5EC"
+  fileName: "#FF8FAB"
+  fileBackground: "#FFC2D1"
+  importArrow: "#FB6F92"
 ```
 
 ...to produce the following outputs...
