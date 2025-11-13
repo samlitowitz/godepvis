@@ -151,28 +151,36 @@ func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 	qualifiedName := node.Name.String()
 
 	if node.Recv != nil {
-		// TODO: don't emit receiver functions/methods? we don't need them
-		var typName string
-		switch expr := node.Recv.List[0].Type.(type) {
-		case *ast.Ident:
-			typName = expr.String()
-		case *ast.StarExpr:
-			if expr.X == nil {
-				// panic error, invalid receiver method
-				panic("invalid receiver method")
-			}
-			ident, ok := expr.X.(*ast.Ident)
-			if !ok {
-				// panic error, invalid receiver method
-				panic("invalid receiver method")
-			}
-			typName = ident.String()
-		default:
-			// panic error, invalid receiver method
-			panic("invalid receiver method")
-		}
-		receiverName = typName
-		qualifiedName = typName + "." + node.Name.String()
+		//// TODO: don't emit receiver functions/methods? we don't need them
+		//var typName string
+		//switch expr := node.Recv.List[0].Type.(type) {
+		//case *ast.Ident:
+		//	typName = expr.String()
+		//case *ast.StarExpr:
+		//	if expr.X == nil {
+		//		// panic error, invalid receiver method
+		//		panic("invalid receiver method")
+		//	}
+		//	switch x := expr.X.(type) {
+		//	case *ast.Ident:
+		//		typName = x.String()
+		//	case *ast.IndexExpr:
+		//		typName = x.Index.
+		//	}
+		//	ident, ok := expr.X.(*ast.Ident)
+		//	if !ok {
+		//		// panic error, invalid receiver method
+		//		panic("invalid receiver method")
+		//	}
+		//	typName = ident.String()
+		//case *ast.IndexListExpr:
+		//
+		//default:
+		//	// panic error, invalid receiver method
+		//	panic("invalid receiver method")
+		//}
+		//receiverName = typName
+		//qualifiedName = typName + "." + node.Name.String()
 	}
 
 	v.inOrderNodes = append(
@@ -184,3 +192,5 @@ func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 		},
 	)
 }
+
+//func getTypeName()

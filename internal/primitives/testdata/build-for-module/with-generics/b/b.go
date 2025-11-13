@@ -1,23 +1,19 @@
 package b
 
 import (
-	"log"
-
 	"github.com/fake/fake/a"
 )
 
-func Fn() {
-	a.Fn()
-	log.Println("B")
-}
+var gtFn = a.IsGreater
+var gtV = a.IsGreater(0, 1)
+var st = a.Stack[int]{}
+var sl = a.Slice[string, string]{}
+var c = a.Clip([]int{0, 1, 2, 3})
 
-// SumNumbers sums the values of map m. It supports both integers
-// and floats as map values.
-func SumNumbers[K comparable, V a.Number](m map[K]V) V {
+func Sum[V a.Number](vs ...V) V {
 	var s V
-	for _, v := range m {
+	for _, v := range vs {
 		s += v
-
 	}
 	return s
 }
