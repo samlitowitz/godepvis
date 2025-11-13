@@ -250,3 +250,137 @@ func TestBuildForModule_WithCorrectBlankImports(t *testing.T) {
 		}()
 	}
 }
+
+func TestBuildForModule_WithCorrectDecls(t *testing.T) {
+	opts := cmp.Options{
+		cmpopts.SortSlices(
+			func(x, y string) bool {
+				return strings.Compare(x, y) <= 0
+			},
+		),
+	}
+
+	testCases := map[string]struct {
+		dir           string
+		expectedDecls map[string][]string
+	}{
+		//"direct-circular-dependency": {
+		//	dir:           "direct-circular-dependency",
+		//	expectedNames: []string{"a", "b", "log", "main"},
+		//},
+		//"direct-circular-dependency-blank-identifiers": {
+		//	dir:           "direct-circular-dependency-blank-identifiers",
+		//	expectedNames: []string{"a", "b", "log", "main"},
+		//},
+		//"direct-circular-dependency-with-blank-identifier": {
+		//	dir:           "direct-circular-dependency-with-blank-identifier",
+		//	expectedNames: []string{"a", "b", "log", "main"},
+		//},
+		//"multiple-independent-direct-circular-dependencies": {
+		//	dir:           "multiple-independent-direct-circular-dependencies",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"multiple-interlinked-direct-circular-dependencies": {
+		//	dir:           "multiple-interlinked-direct-circular-dependencies",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
+		//	dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"no-circular-dependencies": {
+		//	dir:           "no-circular-dependencies",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"no-circular-dependencies-with-blank-identifier": {
+		//	dir:           "no-circular-dependencies-with-blank-identifier",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"transitive-circular-dependency": {
+		//	dir:           "transitive-circular-dependency",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		"with-generics": {
+			dir: "with-generics",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {},
+				"github.com/fake/fake/b": {"Fn", "gtFn", "gtV", "st", "sl", "c"},
+				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		//"with-types": {
+		//	dir:           "with-types",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+		//"with-test-packages": {
+		//	dir:           "with-test-packages",
+		//	expectedNames: []string{"a", "b", "c", "log", "main"},
+		//},
+	}
+
+	for desc, testCase := range testCases {
+		func() {
+			// REFURL: https://github.com/golang/go/blob/988b718f4130ab5b3ce5a5774e1a58e83c92a163/src/path/filepath/path_test.go#L600
+			// -- START -- //
+			if runtime.GOOS == "ios" {
+				restore := test.Chtmpdir(t)
+				defer restore()
+			}
+
+			tmpDir := t.TempDir()
+
+			origDir, err := os.Getwd()
+			if err != nil {
+				t.Fatal("finding working dir:", err)
+			}
+			if err = os.Chdir(tmpDir); err != nil {
+				t.Fatal("entering temp dir:", err)
+			}
+			defer os.Chdir(origDir)
+			// -- END -- //
+
+			err = os.CopyFS(tmpDir, os.DirFS(filepath.Join(origDir, "testdata", "build-for-module", testCase.dir)))
+			if err != nil {
+				t.Fatal("copy test data:", err)
+			}
+
+			moduleDir := tmpDir
+
+			goModFile, err := modfile.FindGoModFile(moduleDir)
+			if err != nil {
+				t.Fatal(desc, ": failed to find go.mod: ", err)
+			}
+			modulePath, err := modfile.GetModulePath(goModFile)
+			if err != nil {
+				t.Fatal(desc, ": failed to get module path: ", err)
+			}
+
+			actualPkgs, err := primitives.BuildForModule(modulePath, moduleDir)
+			if err != nil {
+				t.Fatal(desc, ": BuildForModule: ", err)
+			}
+
+			actualDecls := make(map[string][]string)
+			for _, pkg := range actualPkgs {
+				pkgUID := pkg.UID()
+				if pkg.Name == "main" {
+					pkgUID = "main"
+				}
+				if _, ok := actualDecls[pkgUID]; !ok {
+					actualDecls[pkgUID] = []string{}
+				}
+				for _, file := range pkg.Files {
+					for _, decl := range file.Decls {
+						actualDecls[pkgUID] = append(actualDecls[pkgUID], decl.UID())
+					}
+				}
+			}
+
+			if diff := cmp.Diff(testCase.expectedDecls, actualDecls, opts); diff != "" {
+				t.Error(desc, test.Mismatch(": expected packages: ", diff))
+			}
+		}()
+	}
+}

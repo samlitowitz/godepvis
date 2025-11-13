@@ -1,6 +1,7 @@
 package primitives
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"strings"
@@ -152,35 +153,9 @@ func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 
 	if node.Recv != nil {
 		//// TODO: don't emit receiver functions/methods? we don't need them
-		//var typName string
-		//switch expr := node.Recv.List[0].Type.(type) {
-		//case *ast.Ident:
-		//	typName = expr.String()
-		//case *ast.StarExpr:
-		//	if expr.X == nil {
-		//		// panic error, invalid receiver method
-		//		panic("invalid receiver method")
-		//	}
-		//	switch x := expr.X.(type) {
-		//	case *ast.Ident:
-		//		typName = x.String()
-		//	case *ast.IndexExpr:
-		//		typName = x.Index.
-		//	}
-		//	ident, ok := expr.X.(*ast.Ident)
-		//	if !ok {
-		//		// panic error, invalid receiver method
-		//		panic("invalid receiver method")
-		//	}
-		//	typName = ident.String()
-		//case *ast.IndexListExpr:
-		//
-		//default:
-		//	// panic error, invalid receiver method
-		//	panic("invalid receiver method")
-		//}
-		//receiverName = typName
-		//qualifiedName = typName + "." + node.Name.String()
+		typName := strings.Join(getTypeName(node.Recv.List[0].Type), ", ")
+		receiverName = typName
+		qualifiedName = typName + "." + node.Name.String()
 	}
 
 	v.inOrderNodes = append(
@@ -193,4 +168,27 @@ func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 	)
 }
 
-//func getTypeName()
+func getTypeName(typ ast.Expr) []string {
+	switch expr := typ.(type) {
+	case *ast.Ident:
+		return []string{expr.String()}
+	case *ast.StarExpr:
+		if expr.X == nil {
+			panic("invalid star expression")
+		}
+		return getTypeName(expr.X)
+
+	case *ast.IndexExpr:
+		return getTypeName(expr.Index)
+
+	case *ast.IndexListExpr:
+		typNames := make([]string, 0, len(expr.Indices))
+		for _, lstExpr := range expr.Indices {
+			typNames = append(typNames, getTypeName(lstExpr)...)
+		}
+		return typNames
+
+	default:
+		panic(fmt.Sprintf("unsupported type expression: %T", typ))
+	}
+}

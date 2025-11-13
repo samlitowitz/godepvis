@@ -4,6 +4,8 @@ import (
 	"github.com/fake/fake/a"
 )
 
+func Fn() {}
+
 var gtFn = a.IsGreater
 var gtV = a.IsGreater(0, 1)
 var st = a.Stack[int]{}
