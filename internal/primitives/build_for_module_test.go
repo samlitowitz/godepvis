@@ -62,6 +62,10 @@ func TestBuildForModule(t *testing.T) {
 			dir:           "transitive-circular-dependency",
 			expectedNames: []string{"a", "b", "c", "log", "main"},
 		},
+		"with-generics": {
+			dir:           "with-generics",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
 		"with-test-packages": {
 			dir:           "with-test-packages",
 			expectedNames: []string{"a", "b", "c", "log", "main"},
@@ -169,6 +173,9 @@ func TestBuildForModule_WithCorrectBlankImports(t *testing.T) {
 		},
 		"transitive-circular-dependency": {
 			dir: "transitive-circular-dependency",
+		},
+		"with-generics": {
+			dir: "with-generics",
 		},
 		"with-test-packages": {
 			dir: "with-test-packages",

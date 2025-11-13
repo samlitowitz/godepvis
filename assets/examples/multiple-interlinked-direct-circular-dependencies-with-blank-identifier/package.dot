@@ -9,8 +9,8 @@ digraph {
 	"pkg_c" [label="c", style="filled", fontcolor="#ff0000", fillcolor="#ffffff"];
 	"pkg_main" [label="main", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	"pkg_a" -> "pkg_b" [color="#ff0000"];
-	"pkg_b" -> "pkg_c" [color="#ff0000"];
 	"pkg_b" -> "pkg_a" [color="#ff0000"];
+	"pkg_b" -> "pkg_c" [color="#ff0000"];
 	"pkg_c" -> "pkg_b" [color="#ff0000"];
 	"pkg_main" -> "pkg_a" [color="#000000"];
 }
