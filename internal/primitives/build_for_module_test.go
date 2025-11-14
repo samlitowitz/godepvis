@@ -26,54 +26,62 @@ func TestBuildForModule(t *testing.T) {
 		dir           string
 		expectedNames []string
 	}{
-		//"direct-circular-dependency": {
-		//	dir:           "direct-circular-dependency",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-blank-identifiers": {
-		//	dir:           "direct-circular-dependency-blank-identifiers",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-with-blank-identifier": {
-		//	dir:           "direct-circular-dependency-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"multiple-independent-direct-circular-dependencies": {
-		//	dir:           "multiple-independent-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies": {
-		//	dir:           "no-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies-with-blank-identifier": {
-		//	dir:           "no-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"transitive-circular-dependency": {
-		//	dir:           "transitive-circular-dependency",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
+		"direct-circular-dependency": {
+			dir:           "direct-circular-dependency",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-blank-identifiers": {
+			dir:           "direct-circular-dependency-blank-identifiers",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-with-blank-identifier": {
+			dir:           "direct-circular-dependency-with-blank-identifier",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-with-fn-receivers": {
+			dir:           "direct-circular-dependency-with-fn-receivers",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-with-type-assert": {
+			dir:           "direct-circular-dependency-with-type-assert",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"multiple-independent-direct-circular-dependencies": {
+			dir:           "multiple-independent-direct-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"multiple-interlinked-direct-circular-dependencies": {
+			dir:           "multiple-interlinked-direct-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
+			dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"no-circular-dependencies": {
+			dir:           "no-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"no-circular-dependencies-with-blank-identifier": {
+			dir:           "no-circular-dependencies-with-blank-identifier",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"transitive-circular-dependency": {
+			dir:           "transitive-circular-dependency",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
 		"with-generics": {
 			dir:           "with-generics",
 			expectedNames: []string{"a", "b", "c", "log", "main"},
 		},
-		//"with-types": {
-		//	dir:           "with-types",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"with-test-packages": {
-		//	dir:           "with-test-packages",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
+		"with-types": {
+			dir:           "with-types",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"with-test-packages": {
+			dir:           "with-test-packages",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
 	}
 
 	for desc, testCase := range testCases {
@@ -156,6 +164,12 @@ func TestBuildForModule_WithCorrectBlankImports(t *testing.T) {
 			dir:                                  "direct-circular-dependency-with-blank-identifier",
 			expectedBlankImportsByPackage:        []string{"b"},
 			expectedBlankImportsInCycleByPackage: []string{"b"},
+		},
+		"direct-circular-dependency-with-fn-receivers": {
+			dir: "direct-circular-dependency-with-fn-receivers",
+		},
+		"direct-circular-dependency-with-type-assert": {
+			dir: "direct-circular-dependency-with-type-assert",
 		},
 		"multiple-independent-direct-circular-dependencies": {
 			dir: "multiple-independent-direct-circular-dependencies",
@@ -276,6 +290,10 @@ func TestBuildForModule_WithCorrectDecls(t *testing.T) {
 		//	dir:           "direct-circular-dependency-with-blank-identifier",
 		//	expectedNames: []string{"a", "b", "log", "main"},
 		//},
+		//"direct-circular-dependency-with-fn-receivers": {
+		//	dir:           "direct-circular-dependency-with-fn-receivers",
+		//	expectedNames: []string{"a", "b", "log", "main"},
+		//},
 		//"multiple-independent-direct-circular-dependencies": {
 		//	dir:           "multiple-independent-direct-circular-dependencies",
 		//	expectedNames: []string{"a", "b", "c", "log", "main"},
@@ -303,7 +321,7 @@ func TestBuildForModule_WithCorrectDecls(t *testing.T) {
 		"with-generics": {
 			dir: "with-generics",
 			expectedDecls: map[string][]string{
-				"github.com/fake/fake/a": {},
+				"github.com/fake/fake/a": {"IsGreater", "Popper", "Stack", ""},
 				"github.com/fake/fake/b": {"Fn", "gtFn", "gtV", "st", "sl", "c"},
 				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
 				"log":                    {"Println"},
