@@ -19,3 +19,11 @@ func Sum[V a.Number](vs ...V) V {
 	}
 	return s
 }
+
+func Product[V a.Number](vs ...V) V {
+	var s V
+	for _, v := range vs {
+		s *= v
+	}
+	return s
+}

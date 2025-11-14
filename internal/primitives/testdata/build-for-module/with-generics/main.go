@@ -3,5 +3,5 @@ package main
 import "github.com/fake/fake/a"
 
 func main() {
-	a.Fn()
+	_ = a.IsGreater(0, 1)
 }

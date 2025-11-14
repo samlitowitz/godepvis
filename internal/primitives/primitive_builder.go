@@ -10,10 +10,6 @@ import (
 	"github.com/samlitowitz/godepvis/internal"
 )
 
-const (
-	blankIdentifier = "_"
-)
-
 type PrimitiveBuilder struct {
 	modulePath    string
 	moduleRootDir string
@@ -132,7 +128,7 @@ func (builder *PrimitiveBuilder) AddNode(node ast.Node) error {
 	case *FuncDecl:
 		return builder.addFuncDecl(node)
 
-	case *ast.GenDecl:
+	case *GenDecl:
 		return builder.addGenDecl(node)
 
 	case *SelectorExpr:
@@ -255,7 +251,7 @@ func (builder *PrimitiveBuilder) addImport(node *ImportSpec) error {
 			pkg.BlankImportFile = pkg.Files[blankStub.UID()]
 			// ensure import references the blank declaration
 			// necessary for calculating dependencies
-			blankDecl, _ := blankStub.Decls[blankIdentifier]
+			blankDecl, _ := blankStub.Decls[internal.BlankIdentifier]
 			imp.ReferencedTypes[blankDecl.UID()] = blankDecl
 		}
 	} else {
@@ -268,7 +264,7 @@ func (builder *PrimitiveBuilder) addImport(node *ImportSpec) error {
 			pkg.BlankImportFile = fileStub
 			// ensure import references the blank declaration
 			// necessary for calculating dependencies
-			blankDecl, _ := fileStub.Decls[blankIdentifier]
+			blankDecl, _ := fileStub.Decls[internal.BlankIdentifier]
 			imp.ReferencedTypes[blankDecl.UID()] = blankDecl
 		}
 		pkg.Files[fileStub.UID()] = fileStub
@@ -306,7 +302,7 @@ func (builder *PrimitiveBuilder) addFuncDecl(node *FuncDecl) error {
 	return nil
 }
 
-func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
+func (builder *PrimitiveBuilder) addGenDecl(node *GenDecl) error {
 	if builder.curPkg == nil {
 		return errors.New("add gen decl: no package defined")
 	}
@@ -319,15 +315,20 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 			if node.Tok != token.TYPE {
 				return errors.New("add gen decl: invalid declaration")
 			}
-			if _, ok := builder.curFile.Decls[spec.Name.String()]; ok {
-				return errors.New("add gen decl: duplicate declaration")
+			decl := &internal.Decl{
+				File:     builder.curFile,
+				Name:     spec.Name.String(),
+				FuncName: node.FuncScopeName,
+			}
+
+			if _, ok := builder.curFile.Decls[decl.UID()]; ok {
+				return fmt.Errorf("add gen decl: duplicate declaration: %s", decl.Name)
+			}
+			if decl.IsBlank() {
+				continue
 			}
 			if spec.Name.String() == "" {
 				return errors.New("add gen decl: invalid name")
-			}
-			decl := &internal.Decl{
-				File: builder.curFile,
-				Name: spec.Name.String(),
 			}
 			decl = builder.fixupStubDecl(decl)
 			builder.curFile.Decls[decl.UID()] = decl
@@ -337,15 +338,19 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 				return errors.New("add gen decl: invalid declaration")
 			}
 			for _, name := range spec.Names {
-				if _, ok := builder.curFile.Decls[name.String()]; ok {
-					return errors.New("add gen decl: duplicate declaration")
+				decl := &internal.Decl{
+					File:     builder.curFile,
+					Name:     name.String(),
+					FuncName: node.FuncScopeName,
+				}
+				if decl.IsBlank() {
+					continue
+				}
+				if _, ok := builder.curFile.Decls[decl.UID()]; ok {
+					return fmt.Errorf("add gen decl: duplicate declaration: %s", decl.Name)
 				}
 				if name.String() == "" {
 					return errors.New("add gen decl: invalid constant or variable name")
-				}
-				decl := &internal.Decl{
-					File: builder.curFile,
-					Name: name.String(),
 				}
 				decl = builder.fixupStubDecl(decl)
 				builder.curFile.Decls[decl.UID()] = decl
@@ -487,11 +492,11 @@ func buildStubFile(pkg *internal.Package) *internal.File {
 func buildBlankFile(pkg *internal.Package) *internal.File {
 	blank := &internal.File{
 		Package:  pkg,
-		FileName: blankIdentifier,
+		FileName: internal.BlankIdentifier,
 		AbsPath: fmt.Sprintf(
 			"STUB://%s/%s",
 			pkg.UID(),
-			blankIdentifier,
+			internal.BlankIdentifier,
 		),
 		Imports:       make(map[string]*internal.Import),
 		Decls:         make(map[string]*internal.Decl),
@@ -506,7 +511,7 @@ func buildBlankFile(pkg *internal.Package) *internal.File {
 func buildBlankDecl(file *internal.File) *internal.Decl {
 	return &internal.Decl{
 		File: file,
-		Name: blankIdentifier,
+		Name: internal.BlankIdentifier,
 	}
 }
 

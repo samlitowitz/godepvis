@@ -26,62 +26,66 @@ func TestBuildForModule(t *testing.T) {
 		dir           string
 		expectedNames []string
 	}{
-		//"direct-circular-dependency": {
-		//	dir:           "direct-circular-dependency",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-blank-identifiers": {
-		//	dir:           "direct-circular-dependency-blank-identifiers",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-with-blank-identifier": {
-		//	dir:           "direct-circular-dependency-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-with-fn-receivers": {
-		//	dir:           "direct-circular-dependency-with-fn-receivers",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
+		"direct-circular-dependency": {
+			dir:           "direct-circular-dependency",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-blank-identifiers": {
+			dir:           "direct-circular-dependency-blank-identifiers",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-with-blank-identifier": {
+			dir:           "direct-circular-dependency-with-blank-identifier",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
+		"direct-circular-dependency-with-fn-receivers": {
+			dir:           "direct-circular-dependency-with-fn-receivers",
+			expectedNames: []string{"a", "b", "log", "main"},
+		},
 		"direct-circular-dependency-with-type-assert": {
 			dir:           "direct-circular-dependency-with-type-assert",
 			expectedNames: []string{"a", "b", "log", "main"},
 		},
-		//"multiple-independent-direct-circular-dependencies": {
-		//	dir:           "multiple-independent-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies": {
-		//	dir:           "no-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies-with-blank-identifier": {
-		//	dir:           "no-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"transitive-circular-dependency": {
-		//	dir:           "transitive-circular-dependency",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"with-generics": {
-		//	dir:           "with-generics",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"with-types": {
-		//	dir:           "with-types",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"with-test-packages": {
-		//	dir:           "with-test-packages",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
+		"multiple-independent-direct-circular-dependencies": {
+			dir:           "multiple-independent-direct-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"multiple-interlinked-direct-circular-dependencies": {
+			dir:           "multiple-interlinked-direct-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
+			dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"no-circular-dependencies": {
+			dir:           "no-circular-dependencies",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"no-circular-dependencies-with-blank-identifier": {
+			dir:           "no-circular-dependencies-with-blank-identifier",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"transitive-circular-dependency": {
+			dir:           "transitive-circular-dependency",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"with-fn-scoped": {
+			dir:           "with-fn-scoped",
+			expectedNames: []string{"a", "b", "main"},
+		},
+		"with-generics": {
+			dir:           "with-generics",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"with-types": {
+			dir:           "with-types",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
+		"with-test-packages": {
+			dir:           "with-test-packages",
+			expectedNames: []string{"a", "b", "c", "log", "main"},
+		},
 	}
 
 	for desc, testCase := range testCases {
@@ -192,6 +196,9 @@ func TestBuildForModule_WithCorrectBlankImports(t *testing.T) {
 		"transitive-circular-dependency": {
 			dir: "transitive-circular-dependency",
 		},
+		"with-fn-scoped": {
+			dir: "with-fn-scoped",
+		},
 		"with-generics": {
 			dir: "with-generics",
 		},
@@ -278,64 +285,160 @@ func TestBuildForModule_WithCorrectDecls(t *testing.T) {
 		dir           string
 		expectedDecls map[string][]string
 	}{
-		//"direct-circular-dependency": {
-		//	dir:           "direct-circular-dependency",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-blank-identifiers": {
-		//	dir:           "direct-circular-dependency-blank-identifiers",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-with-blank-identifier": {
-		//	dir:           "direct-circular-dependency-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"direct-circular-dependency-with-fn-receivers": {
-		//	dir:           "direct-circular-dependency-with-fn-receivers",
-		//	expectedNames: []string{"a", "b", "log", "main"},
-		//},
-		//"multiple-independent-direct-circular-dependencies": {
-		//	dir:           "multiple-independent-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
-		//	dir:           "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies": {
-		//	dir:           "no-circular-dependencies",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"no-circular-dependencies-with-blank-identifier": {
-		//	dir:           "no-circular-dependencies-with-blank-identifier",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"transitive-circular-dependency": {
-		//	dir:           "transitive-circular-dependency",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		"with-generics": {
-			dir: "with-generics",
+		"direct-circular-dependency": {
+			dir: "direct-circular-dependency",
 			expectedDecls: map[string][]string{
-				"github.com/fake/fake/a": {"IsGreater", "Popper", "Stack", ""},
-				"github.com/fake/fake/b": {"Fn", "gtFn", "gtV", "st", "sl", "c"},
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"direct-circular-dependency-blank-identifiers": {
+			dir: "direct-circular-dependency-blank-identifiers",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"_", "Fn"},
+				"github.com/fake/fake/b": {"_", "Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"direct-circular-dependency-with-blank-identifier": {
+			dir: "direct-circular-dependency-with-blank-identifier",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"_", "Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"direct-circular-dependency-with-fn-receivers": {
+			dir: "direct-circular-dependency-with-fn-receivers",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"A"},
+				"github.com/fake/fake/b": {"B"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"multiple-independent-direct-circular-dependencies": {
+			dir: "multiple-independent-direct-circular-dependencies",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
+				"github.com/fake/fake/c": {"Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"multiple-interlinked-direct-circular-dependencies": {
+			dir: "multiple-interlinked-direct-circular-dependencies",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
+				"github.com/fake/fake/c": {"Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"multiple-interlinked-direct-circular-dependencies-with-blank-identifier": {
+			dir: "multiple-interlinked-direct-circular-dependencies-with-blank-identifier",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"_", "Fn"},
+				"github.com/fake/fake/b": {"_", "Fn"},
+				"github.com/fake/fake/c": {"_", "Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"no-circular-dependencies": {
+			dir: "no-circular-dependencies",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
 				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
 				"log":                    {"Println"},
 				"main":                   {"main"},
 			},
 		},
-		//"with-types": {
-		//	dir:           "with-types",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
-		//"with-test-packages": {
-		//	dir:           "with-test-packages",
-		//	expectedNames: []string{"a", "b", "c", "log", "main"},
-		//},
+		"no-circular-dependencies-with-blank-identifier": {
+			dir: "no-circular-dependencies-with-blank-identifier",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn", "_"},
+				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"transitive-circular-dependency": {
+			dir: "transitive-circular-dependency",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
+				"github.com/fake/fake/c": {"Fn"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"with-fn-scoped": {
+			dir: "with-fn-scoped",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"A"},
+				"github.com/fake/fake/b": {
+					"1.aS",
+					"1.b",
+					"1.c",
+					"2.aS",
+					"2.b",
+					"2.c",
+					"Fn1",
+					"Fn1.aS",
+					"Fn1.b",
+					"Fn1.c",
+					"Fn2",
+					"Fn2.aS",
+					"Fn2.b",
+					"Fn2.c",
+					"Fn3",
+					"Fn3.7.aS",
+					"Fn3.7.b",
+					"Fn3.7.c",
+				},
+
+				"main": {"main"},
+			},
+		},
+		"with-generics": {
+			dir: "with-generics",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"IsGreater", "Popper", "Stack", "Number", "Slice", "Clip"},
+				"github.com/fake/fake/b": {"Fn", "gtFn", "gtV", "st", "sl", "c", "Sum", "Sum.s", "Product", "Product.s"},
+				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"with-types": {
+			dir: "with-types",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"AStruct", "ATStruct", "AString", "Fn"},
+				"github.com/fake/fake/b": {"Fn", "aStruct", "aTStruct", "aString"},
+				"github.com/fake/fake/c": {"Fn2", "Fn3", "Fn1"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
+		"with-test-packages": {
+			dir: "with-test-packages",
+			expectedDecls: map[string][]string{
+				"github.com/fake/fake/a": {"Fn"},
+				"github.com/fake/fake/b": {"Fn"},
+				"github.com/fake/fake/c": {"Fn1", "Fn2", "Fn3"},
+				"log":                    {"Println"},
+				"main":                   {"main"},
+			},
+		},
 	}
 
 	for desc, testCase := range testCases {

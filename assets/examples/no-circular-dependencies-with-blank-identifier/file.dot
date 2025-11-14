@@ -19,8 +19,8 @@ digraph {
 		fontcolor="#000000";
 		fillcolor="#ffffff";
 
-		"pkg_b_file_b" [label="b.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_b_file__" [label="_", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
+		"pkg_b_file_b" [label="b.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_c" {
@@ -29,9 +29,9 @@ digraph {
 		fontcolor="#000000";
 		fillcolor="#ffffff";
 
-		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_2" [label="c_2.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_3" [label="c_3.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
+		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_main" {

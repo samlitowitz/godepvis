@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+const (
+	BlankIdentifier = "_"
+)
+
 type Package struct {
 	DirName string
 
@@ -142,7 +146,8 @@ func (f File) UID() string {
 type Decl struct {
 	File *File
 
-	Name string
+	Name     string
+	FuncName string
 }
 
 func (decl Decl) UID() string {
@@ -150,7 +155,14 @@ func (decl Decl) UID() string {
 }
 
 func (decl Decl) QualifiedName() string {
-	return decl.Name
+	if decl.FuncName == "" {
+		return decl.Name
+	}
+	return decl.FuncName + "." + decl.Name
+}
+
+func (decl Decl) IsBlank() bool {
+	return decl.Name == BlankIdentifier
 }
 
 type Import struct {

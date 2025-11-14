@@ -66,14 +66,17 @@ func TestDependencyVisitor_Visit_Constants(t *testing.T) {
 	depVis := primitives.NewDependencyVisitor()
 	ast.Walk(depVis, astFile)
 
-	var actualConstants []string
+	actualConstantsByFuncScopeName := make(map[string][]string)
 	for _, node := range depVis.InOrderNodes() {
-		declNode, ok := node.(*ast.GenDecl)
+		declNode, ok := node.(*primitives.GenDecl)
 		if !ok {
 			continue
 		}
 		if declNode.Tok != token.CONST {
 			continue
+		}
+		if _, ok := actualConstantsByFuncScopeName[declNode.FuncScopeName]; !ok {
+			actualConstantsByFuncScopeName[declNode.FuncScopeName] = make([]string, 0, len(declNode.Specs))
 		}
 		for _, spec := range declNode.Specs {
 			spec, ok := spec.(*ast.ValueSpec)
@@ -81,20 +84,22 @@ func TestDependencyVisitor_Visit_Constants(t *testing.T) {
 				continue
 			}
 			for _, name := range spec.Names {
-				actualConstants = append(actualConstants, name.String())
+				actualConstantsByFuncScopeName[declNode.FuncScopeName] = append(actualConstantsByFuncScopeName[declNode.FuncScopeName], name.String())
 			}
 		}
 	}
 
-	expectedConstants := []string{
-		"CA",
-		"CB",
-		"CC",
-		"CD",
-		"ce",
+	expectedConstantsByFuncScopeName := map[string][]string{
+		"":        {"CA", "CB", "CC", "CD", "ce"},
+		"2":       {"ce"},
+		"3":       {"ce"},
+		"CFn1":    {"ce"},
+		"CFn1.14": {"ce"},
+		"CFn1.17": {"ce"},
+		"CFn2":    {"ce"},
 	}
 
-	if diff := cmp.Diff(expectedConstants, actualConstants); diff != "" {
+	if diff := cmp.Diff(expectedConstantsByFuncScopeName, actualConstantsByFuncScopeName); diff != "" {
 		t.Error(test.Mismatch("", diff))
 	}
 }
@@ -115,31 +120,36 @@ func TestDependencyVisitor_Visit_Types(t *testing.T) {
 	depVis := primitives.NewDependencyVisitor()
 	ast.Walk(depVis, astFile)
 
-	var actualConstants []string
+	actualTypesByFuncScopeName := make(map[string][]string)
 	for _, node := range depVis.InOrderNodes() {
-		declNode, ok := node.(*ast.GenDecl)
+		declNode, ok := node.(*primitives.GenDecl)
 		if !ok {
 			continue
 		}
 		if declNode.Tok != token.TYPE {
 			continue
 		}
+		if _, ok := actualTypesByFuncScopeName[declNode.FuncScopeName]; !ok {
+			actualTypesByFuncScopeName[declNode.FuncScopeName] = make([]string, 0, len(declNode.Specs))
+		}
 		for _, spec := range declNode.Specs {
 			spec, ok := spec.(*ast.TypeSpec)
 			if !ok {
 				continue
 			}
-			actualConstants = append(actualConstants, spec.Name.String())
+			actualTypesByFuncScopeName[declNode.FuncScopeName] = append(actualTypesByFuncScopeName[declNode.FuncScopeName], spec.Name.String())
 		}
 	}
 
-	expectedConstants := []string{
-		"TA",
-		"TB",
-		"tc",
+	expectedTypesByFuncScopeName := map[string][]string{
+		"":     {"TA", "TB", "tc"},
+		"0":    {"tc"},
+		"1":    {"tc"},
+		"TFn1": {"tc"},
+		"TFn2": {"tc"},
 	}
 
-	if diff := cmp.Diff(expectedConstants, actualConstants); diff != "" {
+	if diff := cmp.Diff(expectedTypesByFuncScopeName, actualTypesByFuncScopeName); diff != "" {
 		t.Error(test.Mismatch("", diff))
 	}
 }
@@ -160,14 +170,17 @@ func TestDependencyVisitor_Visit_Vars(t *testing.T) {
 	depVis := primitives.NewDependencyVisitor()
 	ast.Walk(depVis, astFile)
 
-	var actualConstants []string
+	actualVarsByFuncScopeName := make(map[string][]string)
 	for _, node := range depVis.InOrderNodes() {
-		declNode, ok := node.(*ast.GenDecl)
+		declNode, ok := node.(*primitives.GenDecl)
 		if !ok {
 			continue
 		}
 		if declNode.Tok != token.VAR {
 			continue
+		}
+		if _, ok := actualVarsByFuncScopeName[declNode.FuncScopeName]; !ok {
+			actualVarsByFuncScopeName[declNode.FuncScopeName] = make([]string, 0, len(declNode.Specs))
 		}
 		for _, spec := range declNode.Specs {
 			spec, ok := spec.(*ast.ValueSpec)
@@ -175,20 +188,20 @@ func TestDependencyVisitor_Visit_Vars(t *testing.T) {
 				continue
 			}
 			for _, name := range spec.Names {
-				actualConstants = append(actualConstants, name.String())
+				actualVarsByFuncScopeName[declNode.FuncScopeName] = append(actualVarsByFuncScopeName[declNode.FuncScopeName], name.String())
 			}
 		}
 	}
 
-	expectedConstants := []string{
-		"VA",
-		"VB",
-		"VC",
-		"VD",
-		"ve",
+	expectedVarsByFuncScopeName := map[string][]string{
+		"":     {"VA", "VB", "VC", "VD", "ve", "_", "_"},
+		"0":    {"ve"},
+		"1":    {"ve"},
+		"VFn1": {"ve"},
+		"VFn2": {"ve"},
 	}
 
-	if diff := cmp.Diff(expectedConstants, actualConstants); diff != "" {
+	if diff := cmp.Diff(expectedVarsByFuncScopeName, actualVarsByFuncScopeName); diff != "" {
 		t.Error(test.Mismatch("", diff))
 	}
 }
@@ -219,9 +232,6 @@ func TestDependencyVisitor_Visit_Functions(t *testing.T) {
 	}
 
 	expectedConstants := []string{
-		"FTA1",
-		"FTA2",
-		"FC",
 		"F1",
 	}
 

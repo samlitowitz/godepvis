@@ -7,3 +7,25 @@ const (
 	CD = 4
 )
 const ce = 5
+
+func CFn1() {
+	const ce = 6
+	var _ = func() {
+		const ce = 6
+	}
+	func() {
+		const ce = 6
+	}()
+}
+
+func CFn2() {
+	const ce = 6
+}
+
+var _ = func() {
+	const ce = 6
+}
+
+var _ = func() {
+	const ce = 6
+}
