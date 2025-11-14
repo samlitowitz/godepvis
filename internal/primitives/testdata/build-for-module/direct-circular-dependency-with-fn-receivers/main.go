@@ -3,5 +3,6 @@ package main
 import "github.com/fake/fake/a"
 
 func main() {
-	a.Fn()
+	aS := a.A{}
+	aS.Fn()
 }

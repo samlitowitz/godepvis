@@ -20,8 +20,8 @@ digraph {
 		fontcolor="#ff0000";
 		fillcolor="#ffffff";
 
-		"pkg_b_file_b" [label="b.go", style="filled", fontcolor="#ff0000", fillcolor="#ffffff"];
 		"pkg_b_file__" [label="_", style="filled", fontcolor="#ff0000", fillcolor="#ffffff"];
+		"pkg_b_file_b" [label="b.go", style="filled", fontcolor="#ff0000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_c" {
