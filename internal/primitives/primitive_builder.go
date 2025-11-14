@@ -296,18 +296,9 @@ func (builder *PrimitiveBuilder) addFuncDecl(node *FuncDecl) error {
 	if _, ok := builder.curFile.Decls[declUID]; ok {
 		return fmt.Errorf("add func decl: duplicate declaration: %s", node.QualifiedName)
 	}
-	// TODO: receiver methods should never be received and should be skipped
-	var receiverDecl *internal.Decl
-	for _, file := range builder.curPkg.Files {
-		if _, ok := file.Decls[node.ReceiverName]; ok {
-			receiverDecl = file.Decls[node.ReceiverName]
-			break
-		}
-	}
 	decl := &internal.Decl{
-		File:         builder.curFile,
-		ReceiverDecl: receiverDecl,
-		Name:         node.Name.String(),
+		File: builder.curFile,
+		Name: node.Name.String(),
 	}
 	decl = builder.fixupStubDecl(decl)
 	builder.curFile.Decls[declUID] = decl
@@ -335,9 +326,8 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 				return errors.New("add gen decl: invalid name")
 			}
 			decl := &internal.Decl{
-				File:         builder.curFile,
-				ReceiverDecl: nil,
-				Name:         spec.Name.String(),
+				File: builder.curFile,
+				Name: spec.Name.String(),
 			}
 			decl = builder.fixupStubDecl(decl)
 			builder.curFile.Decls[decl.UID()] = decl
@@ -354,9 +344,8 @@ func (builder *PrimitiveBuilder) addGenDecl(node *ast.GenDecl) error {
 					return errors.New("add gen decl: invalid constant or variable name")
 				}
 				decl := &internal.Decl{
-					File:         builder.curFile,
-					ReceiverDecl: nil,
-					Name:         name.String(),
+					File: builder.curFile,
+					Name: name.String(),
 				}
 				decl = builder.fixupStubDecl(decl)
 				builder.curFile.Decls[decl.UID()] = decl
@@ -532,7 +521,6 @@ func shallowCopyPackage(to, from *internal.Package) {
 
 func copyDeclaration(to, from *internal.Decl) {
 	to.File = from.File
-	to.ReceiverDecl = from.ReceiverDecl
 	to.Name = from.Name
 }
 

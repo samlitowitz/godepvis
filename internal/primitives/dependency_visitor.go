@@ -152,10 +152,7 @@ func (v *DependencyVisitor) addFuncDecl(node *ast.FuncDecl) {
 	qualifiedName := node.Name.String()
 
 	if node.Recv != nil {
-		//// TODO: don't emit receiver functions/methods? we don't need them
-		typName := strings.Join(getTypeName(node.Recv.List[0].Type), ", ")
-		receiverName = typName
-		qualifiedName = typName + "." + node.Name.String()
+		return
 	}
 
 	v.inOrderNodes = append(

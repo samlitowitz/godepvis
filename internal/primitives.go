@@ -140,8 +140,7 @@ func (f File) UID() string {
 }
 
 type Decl struct {
-	File         *File
-	ReceiverDecl *Decl
+	File *File
 
 	Name string
 }
@@ -151,10 +150,7 @@ func (decl Decl) UID() string {
 }
 
 func (decl Decl) QualifiedName() string {
-	if decl.ReceiverDecl == nil {
-		return decl.Name
-	}
-	return decl.ReceiverDecl.Name + "." + decl.Name
+	return decl.Name
 }
 
 type Import struct {
