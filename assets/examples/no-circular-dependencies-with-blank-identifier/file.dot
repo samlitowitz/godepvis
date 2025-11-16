@@ -19,8 +19,8 @@ digraph {
 		fontcolor="#000000";
 		fillcolor="#ffffff";
 
-		"pkg_b_file__" [label="_", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_b_file_b" [label="b.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
+		"pkg_b_file__" [label="_", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_c" {
@@ -29,9 +29,9 @@ digraph {
 		fontcolor="#000000";
 		fillcolor="#ffffff";
 
+		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_2" [label="c_2.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_3" [label="c_3.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
-		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_main" {
@@ -43,10 +43,10 @@ digraph {
 		"pkg_main_file_main" [label="main.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
-	"pkg_b_file_b" -> "pkg_a_file_a" [color="#000000"];
-	"pkg_c_file_c_1" -> "pkg_b_file_b" [color="#000000"];
-	"pkg_c_file_c_1" -> "pkg_b_file__" [color="#000000"];
-	"pkg_c_file_c_2" -> "pkg_b_file_b" [color="#000000"];
-	"pkg_c_file_c_3" -> "pkg_b_file_b" [color="#000000"];
-	"pkg_main_file_main" -> "pkg_a_file_a" [color="#000000"];
+		"pkg_b_file_b" -> "pkg_a_file_a" [color="#000000"];
+		"pkg_c_file_c_3" -> "pkg_b_file_b" [color="#000000"];
+		"pkg_c_file_c_1" -> "pkg_b_file__" [color="#000000"];
+		"pkg_c_file_c_1" -> "pkg_b_file_b" [color="#000000"];
+		"pkg_c_file_c_2" -> "pkg_b_file_b" [color="#000000"];
+		"pkg_main_file_main" -> "pkg_a_file_a" [color="#000000"];
 }

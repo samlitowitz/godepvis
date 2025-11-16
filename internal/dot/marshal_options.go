@@ -6,8 +6,9 @@ import (
 )
 
 type options struct {
-	resolution internal.Resolution
-	palette    color.Palette
+	resolution             internal.Resolution
+	palette                color.Palette
+	showMultipleReferences bool
 }
 
 type Option interface {
@@ -32,4 +33,14 @@ func (opt paletteOption) apply(opts *options) {
 
 func WithPalette(palette color.Palette) Option {
 	return paletteOption(palette)
+}
+
+type showMultipleReferencesOption bool
+
+func (opt showMultipleReferencesOption) apply(opts *options) {
+	opts.showMultipleReferences = bool(opt)
+}
+
+func WithShowMultipleReferences(showMultipleReferences bool) Option {
+	return showMultipleReferencesOption(showMultipleReferences)
 }

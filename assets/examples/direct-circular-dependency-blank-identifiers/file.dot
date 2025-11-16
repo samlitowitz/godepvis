@@ -33,7 +33,7 @@ digraph {
 		"pkg_main_file_main" [label="main.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
-	"pkg_a_file_a" -> "pkg_b_file__" [color="#ff0000"];
-	"pkg_b_file_b" -> "pkg_a_file__" [color="#ff0000"];
-	"pkg_main_file_main" -> "pkg_a_file_a" [color="#000000"];
+		"pkg_a_file_a" -> "pkg_b_file__" [color="#ff0000"];
+		"pkg_b_file_b" -> "pkg_a_file__" [color="#ff0000"];
+		"pkg_main_file_main" -> "pkg_a_file_a" [color="#000000"];
 }

@@ -27,7 +27,7 @@ func Marshal(modulePath string, pkgs []*internal.Package, opts ...Option) ([]byt
 	switch options.resolution {
 	case internal.FileResolution:
 		writeNodeDefsForFileResolution(buf, &options.palette, pkgs)
-		writeRelationshipsForFileResolution(buf, &options.palette, pkgs)
+		writeRelationshipsForFileResolution(options.showMultipleReferences, buf, &options.palette, pkgs)
 	case internal.PackageResolution:
 		writeNodeDefsForPackageResolution(buf, &options.palette, pkgs)
 		writeRelationshipsForPackageResolution(buf, &options.palette, pkgs)

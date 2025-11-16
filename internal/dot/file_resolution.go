@@ -7,6 +7,11 @@ import (
 	"github.com/samlitowitz/godepvis/internal/color"
 )
 
+const (
+	fileResolutionEdgeDef = `
+		"%s" -> "%s" [color="%s"];`
+)
+
 func writeNodeDefsForFileResolution(buf *bytes.Buffer, palette *color.Palette, pkgs []*internal.Package) {
 	var err error
 	clusterDefHeader := `
@@ -76,10 +81,11 @@ func writeNodeDefsForFileResolution(buf *bytes.Buffer, palette *color.Palette, p
 	}
 }
 
-func writeRelationshipsForFileResolution(buf *bytes.Buffer, palette *color.Palette, pkgs []*internal.Package) {
-	var err error
-	edgeDef := `
-	"%s" -> "%s" [color="%s"];`
+func writeRelationshipsForFileResolution(showMultipleReferences bool, buf *bytes.Buffer, palette *color.Palette, pkgs []*internal.Package) {
+	writeEdgesFn := showOneReferencePerFileImportForFileResolution
+	if showMultipleReferences {
+		writeEdgesFn = showMultipleReferencesPerFileImportForFileResolution
+	}
 
 	for _, pkg := range pkgs {
 		if pkg.IsStub {
@@ -89,30 +95,65 @@ func writeRelationshipsForFileResolution(buf *bytes.Buffer, palette *color.Palet
 			if file.IsStub {
 				continue
 			}
-			for _, imp := range file.Imports {
-				if imp.Package == nil {
-					continue
-				}
-				if imp.Package.IsStub {
-					continue
-				}
-				for _, refTyp := range imp.ReferencedTypes {
-					arrowColor := palette.Base.ImportArrow
-					if _, ok := imp.ReferencedFilesInCycle[refTyp.File.UID()]; ok {
-						arrowColor = palette.Cycle.ImportArrow
-					}
-					_, err = fmt.Fprintf(
-						buf,
-						edgeDef,
-						fileNodeName(file),
-						fileNodeName(refTyp.File),
-						arrowColor.Hex(),
-					)
-					if err != nil {
-						panic(err)
-					}
-				}
+			writeEdgesFn(buf, palette, file)
+		}
+	}
+}
+
+func showMultipleReferencesPerFileImportForFileResolution(buf *bytes.Buffer, palette *color.Palette, file *internal.File) {
+	var err error
+	for _, imp := range file.Imports {
+		if imp.Package == nil {
+			continue
+		}
+		if imp.Package.IsStub {
+			continue
+		}
+		for _, refTyp := range imp.ReferencedTypes {
+			arrowColor := palette.Base.ImportArrow
+			if _, ok := imp.ReferencedFilesInCycle[refTyp.File.UID()]; ok {
+				arrowColor = palette.Cycle.ImportArrow
 			}
+			_, err = fmt.Fprintf(
+				buf,
+				fileResolutionEdgeDef,
+				fileNodeName(file),
+				fileNodeName(refTyp.File),
+				arrowColor.Hex(),
+			)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func showOneReferencePerFileImportForFileResolution(buf *bytes.Buffer, palette *color.Palette, file *internal.File) {
+	var err error
+	for _, imp := range file.Imports {
+		if imp.Package == nil {
+			continue
+		}
+		if imp.Package.IsStub {
+			continue
+		}
+
+		for _, refTyp := range imp.ReferencedTypes {
+			arrowColor := palette.Base.ImportArrow
+			if _, ok := imp.ReferencedFilesInCycle[refTyp.File.UID()]; ok {
+				arrowColor = palette.Cycle.ImportArrow
+			}
+			_, err = fmt.Fprintf(
+				buf,
+				fileResolutionEdgeDef,
+				fileNodeName(file),
+				fileNodeName(refTyp.File),
+				arrowColor.Hex(),
+			)
+			if err != nil {
+				panic(err)
+			}
+			break
 		}
 	}
 }
