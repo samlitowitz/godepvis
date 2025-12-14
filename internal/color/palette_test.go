@@ -2,8 +2,8 @@ package color_test
 
 import (
 	"github.com/google/go-cmp/cmp"
-	"github.com/samlitowitz/godepvis/internal/color"
-	"github.com/samlitowitz/godepvis/internal/test"
+	"github.com/samlitowitz/godepvis/v2/internal/color"
+	"github.com/samlitowitz/godepvis/v2/internal/test"
 	"gopkg.in/yaml.v3"
 	"os"
 	"runtime"

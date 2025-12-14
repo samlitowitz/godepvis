@@ -28,9 +28,9 @@ digraph {
 		fontcolor="#000000";
 		fillcolor="#ffffff";
 
-		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_2" [label="c_2.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 		"pkg_c_file_c_3" [label="c_3.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
+		"pkg_c_file_c_1" [label="c_1.go", style="filled", fontcolor="#000000", fillcolor="#ffffff"];
 	};
 
 	subgraph "cluster_pkg_main" {

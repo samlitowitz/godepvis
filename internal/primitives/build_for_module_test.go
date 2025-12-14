@@ -3,9 +3,9 @@ package primitives_test
 import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/samlitowitz/godepvis/internal/modfile"
-	"github.com/samlitowitz/godepvis/internal/primitives"
-	"github.com/samlitowitz/godepvis/internal/test"
+	"github.com/samlitowitz/godepvis/v2/internal/modfile"
+	"github.com/samlitowitz/godepvis/v2/internal/primitives"
+	"github.com/samlitowitz/godepvis/v2/internal/test"
 	"os"
 	"path/filepath"
 	"runtime"

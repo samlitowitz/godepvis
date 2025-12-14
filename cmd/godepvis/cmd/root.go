@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/color"
-	"github.com/samlitowitz/godepvis/internal/dot"
-	"github.com/samlitowitz/godepvis/internal/modfile"
-	"github.com/samlitowitz/godepvis/internal/primitives"
+	"github.com/samlitowitz/godepvis/v2/internal"
+	"github.com/samlitowitz/godepvis/v2/internal/color"
+	"github.com/samlitowitz/godepvis/v2/internal/dot"
+	"github.com/samlitowitz/godepvis/v2/internal/modfile"
+	"github.com/samlitowitz/godepvis/v2/internal/primitives"
 	"github.com/spf13/cobra"
 	"log"
 	"os"

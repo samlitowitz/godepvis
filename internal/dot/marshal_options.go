@@ -1,8 +1,8 @@
 package dot
 
 import (
-	"github.com/samlitowitz/godepvis/internal"
-	"github.com/samlitowitz/godepvis/internal/color"
+	"github.com/samlitowitz/godepvis/v2/internal"
+	"github.com/samlitowitz/godepvis/v2/internal/color"
 )
 
 type options struct {
