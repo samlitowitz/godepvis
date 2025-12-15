@@ -5,7 +5,7 @@
 `godepvis` is a tool to visualize Go imports resolved to the package or file level.
 
 # Installation
-`go install github.com/samlitowitz/godepvis/cmd/godepvis@v1.0.6`
+`go install github.com/samlitowitz/godepvis/v3/cmd/godepvis@latest`
 
 # Usage
 ```shell
