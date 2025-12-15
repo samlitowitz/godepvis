@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"cmp"
 	"fmt"
-	"github.com/samlitowitz/godepvis/v2/internal"
-	"github.com/samlitowitz/godepvis/v2/internal/color"
+	"github.com/samlitowitz/godepvis/v3/internal"
+	"github.com/samlitowitz/godepvis/v3/internal/color"
 	"slices"
 	"strings"
 )

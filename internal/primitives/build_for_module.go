@@ -2,7 +2,7 @@ package primitives
 
 import (
 	"fmt"
-	"github.com/samlitowitz/godepvis/v2/internal"
+	"github.com/samlitowitz/godepvis/v3/internal"
 	"go/ast"
 	"go/parser"
 	"go/token"

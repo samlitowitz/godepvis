@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/samlitowitz/godepvis/v2/cmd/godepvis/cmd"
+	"github.com/samlitowitz/godepvis/v3/cmd/godepvis/cmd"
 	"os"
 )
 

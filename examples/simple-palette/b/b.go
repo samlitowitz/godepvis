@@ -3,7 +3,7 @@ package b
 import (
 	"log"
 
-	"github.com/samlitowitz/godepvis/v2/examples/simple/a"
+	"github.com/samlitowitz/godepvis/v3/examples/simple/a"
 )
 
 func Fn() {

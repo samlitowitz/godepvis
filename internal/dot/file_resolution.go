@@ -3,8 +3,8 @@ package dot
 import (
 	"bytes"
 	"fmt"
-	"github.com/samlitowitz/godepvis/v2/internal"
-	"github.com/samlitowitz/godepvis/v2/internal/color"
+	"github.com/samlitowitz/godepvis/v3/internal"
+	"github.com/samlitowitz/godepvis/v3/internal/color"
 )
 
 const (
