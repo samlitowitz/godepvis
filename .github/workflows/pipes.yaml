@@ -16,6 +16,7 @@ on:
       - master
     paths:
       - '**.go'
+  workflow_dispatch:
 
 env:
   GO_VERSION: stable
