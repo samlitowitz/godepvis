@@ -2,7 +2,6 @@ package primitives
 
 import (
 	"fmt"
-	"github.com/samlitowitz/godepvis/v3/internal"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/samlitowitz/godepvis/v3/internal"
 )
 
 func BuildForModule(
@@ -95,7 +96,12 @@ func BuildForModule(
 			for _, node := range depVis.InOrderNodes() {
 				err = builder.AddNode(node)
 				if err != nil {
-					return nil, fmt.Errorf("add node: %s: %w", filename, err)
+					posInfo := filename
+					if node.Pos().IsValid() {
+						pos := fset.Position(node.Pos())
+						posInfo = pos.String()
+					}
+					return nil, fmt.Errorf("add node: %s: %w", posInfo, err)
 				}
 			}
 		}
