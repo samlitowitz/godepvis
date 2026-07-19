@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"go/token"
 	"os"
 	"path/filepath"
 	"strings"
@@ -148,6 +149,7 @@ type Decl struct {
 
 	Name     string
 	FuncName string
+	Pos      token.Pos
 }
 
 func (decl Decl) UID() string {
@@ -158,7 +160,7 @@ func (decl Decl) QualifiedName() string {
 	if decl.FuncName == "" {
 		return decl.Name
 	}
-	return decl.FuncName + "." + decl.Name
+	return fmt.Sprintf("%s.%d.%s", decl.FuncName, decl.Pos, decl.Name)
 }
 
 func (decl Decl) IsBlank() bool {

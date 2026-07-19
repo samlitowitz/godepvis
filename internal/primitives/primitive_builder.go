@@ -343,11 +343,14 @@ func (builder *PrimitiveBuilder) addGenDecl(node *GenDecl) error {
 					Name:     name.String(),
 					FuncName: node.FuncScopeName,
 				}
+				if node.Pos().IsValid() {
+					decl.Pos = node.Pos()
+				}
 				if decl.IsBlank() {
 					continue
 				}
 				if _, ok := builder.curFile.Decls[decl.UID()]; ok {
-					return fmt.Errorf("add gen decl: duplicate declaration: %s", decl.Name)
+					return fmt.Errorf("add gen decl: duplicate declaration: %s (%s)", decl.Name, decl.UID())
 				}
 				if name.String() == "" {
 					return errors.New("add gen decl: invalid constant or variable name")
